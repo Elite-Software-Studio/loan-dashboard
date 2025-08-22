@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { ProloansLayout } from '../components/ProloansLayout';
 
 interface User {
@@ -175,130 +176,119 @@ export default function Users() {
 
     return (
         <ProloansLayout>
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
+            <div className="px-6 py-8">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">Users</h1>
-                    <p className="mt-2 text-sm text-gray-700">
-                        Manage all user accounts and their loan information
-                    </p>
+                    <p className="mt-2 text-gray-600">Manage all users and their accounts</p>
                 </div>
 
-                {/* Users Table */}
-                <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-200">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-lg font-medium text-gray-900">All Users</h2>
-                            <button className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                Add New User
-                            </button>
-                        </div>
+                {isLoading ? (
+                    <div className="animate-pulse space-y-4">
+                        <div className="h-12 bg-gray-200 rounded"></div>
+                        <div className="h-12 bg-gray-200 rounded"></div>
+                        <div className="h-12 bg-gray-200 rounded"></div>
                     </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        User
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Account
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Member Type
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Credit Score
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total Borrowed
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Active Loans
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Risk Score
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {users?.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                                    <span className="text-sm font-medium text-gray-700">
-                                                        {user.name.split(' ').map(n => n[0]).join('')}
+                ) : error ? (
+                    <div className="text-center py-12">
+                        <div className="text-red-600 text-lg font-medium">Error loading users</div>
+                        <div className="text-gray-500 mt-2">{error}</div>
+                    </div>
+                ) : (
+                    <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            User
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Role
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Account
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Credit Score
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Risk Score
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total Borrowed
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total Repaid
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Member Type
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {users.map((user) => (
+                                        <tr
+                                            key={user.id}
+                                            className="hover:bg-gray-50"
+                                        >
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <Link to={`/user?id=${user.id}`} className="block">
+                                                    <div className="flex items-center">
+                                                        <div className="flex-shrink-0 h-10 w-10">
+                                                            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                                                                {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                                            </div>
+                                                        </div>
+                                                        <div className="ml-4">
+                                                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                                            <div className="text-sm text-gray-500">{user.email}</div>
+                                                        </div>
+                                                    </div>
+                                                </Link>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                                                    user.role === 'MANAGER' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-green-100 text-green-800'
+                                                    }`}>
+                                                    {user.role}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {user.accountNumber}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <span className="text-sm font-medium text-gray-900">{user.creditScore}</span>
+                                                    <span className={`ml-2 text-xs ${(user.creditScore || 0) >= 750 ? 'text-green-600' :
+                                                        (user.creditScore || 0) >= 700 ? 'text-yellow-600' : 'text-red-600'
+                                                        }`}>
+                                                        {(user.creditScore || 0) >= 750 ? 'EXCELLENT' :
+                                                            (user.creditScore || 0) >= 700 ? 'GOOD' : 'FAIR'}
                                                     </span>
                                                 </div>
-                                                <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                                                    <div className="text-sm text-gray-500">{user.email}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {user.accountNumber}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getMemberTypeColor(user.memberType || 'REGULAR')}`}>
-                                                {user.memberType || 'REGULAR'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`text-sm font-medium ${getCreditScoreColor(user.creditScore || 0)}`}>
-                                                {user.creditScore || 'N/A'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {formatCurrency(user.totalBorrowed)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {user.loans?.filter(loan => loan.status === 'ACTIVE').length || 0}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {user.internalRiskScore ? `${user.internalRiskScore.toFixed(2)} / ${user.maxRiskScore?.toFixed(2) || '18.00'}` : 'N/A'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button className="text-green-600 hover:text-green-900 mr-3">View</button>
-                                            <button className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                                            <button className="text-red-600 hover:text-red-900">Delete</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Summary Stats */}
-                {users && (
-                    <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                            <h3 className="text-sm font-medium text-gray-500">Total Users</h3>
-                            <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-                        </div>
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                            <h3 className="text-sm font-medium text-gray-500">Elite Members</h3>
-                            <p className="text-2xl font-bold text-gray-900">
-                                {users.filter(u => u.memberType === 'ELITE').length}
-                            </p>
-                        </div>
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                            <h3 className="text-sm font-medium text-gray-500">Total Loans</h3>
-                            <p className="text-2xl font-bold text-gray-900">
-                                {users.reduce((acc, user) => acc + (user.loans?.length || 0), 0)}
-                            </p>
-                        </div>
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                            <h3 className="text-sm font-medium text-gray-500">Total Borrowed</h3>
-                            <p className="text-2xl font-bold text-gray-900">
-                                {formatCurrency(users.reduce((acc, user) => acc + user.totalBorrowed, 0))}
-                            </p>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {user.internalRiskScore?.toFixed(2)} / {user.maxRiskScore?.toFixed(2)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {formatCurrency(user.totalBorrowed)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {formatCurrency(user.totalRepaid)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.memberType === 'ELITE' ? 'bg-purple-100 text-purple-800' :
+                                                    user.memberType === 'PREMIUM' ? 'bg-blue-100 text-blue-800' :
+                                                        'bg-gray-100 text-gray-800'
+                                                    }`}>
+                                                    {user.memberType}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 )}
