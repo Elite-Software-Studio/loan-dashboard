@@ -1,19 +1,55 @@
 import { trpc } from '../lib/trpc-client';
+import { useAuth } from '../lib/auth';
 
 interface UserProfileProps {
     userId: string;
 }
 
 export function UserProfile({ userId }: UserProfileProps) {
+    const { user: currentUser } = useAuth();
     const { data: user, isLoading } = trpc.getUser.useQuery({ id: userId });
     const { data: userLoans } = trpc.getUserLoans.useQuery({ userId });
 
     if (isLoading) {
-        return <div className="animate-pulse">Loading...</div>;
+        return (
+            <div className="max-w-7xl mx-auto">
+                <div className="animate-pulse space-y-6">
+                    <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="h-64 bg-gray-200 rounded"></div>
+                        <div className="lg:col-span-2 space-y-6">
+                            <div className="h-32 bg-gray-200 rounded"></div>
+                            <div className="h-32 bg-gray-200 rounded"></div>
+                            <div className="h-32 bg-gray-200 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (!user) {
-        return <div>User not found</div>;
+        return (
+            <div className="max-w-7xl mx-auto">
+                <div className="text-center py-12">
+                    <div className="mx-auto h-16 w-16 bg-gray-300 rounded-full flex items-center justify-center mb-4">
+                        <svg className="h-8 w-8 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">User Not Found</h3>
+                    <p className="text-gray-500">The requested user profile could not be found.</p>
+                    <div className="mt-6">
+                        <a
+                            href="/users"
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                        >
+                            View All Users
+                        </a>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     const formatCurrency = (amount: number) => {
@@ -109,8 +145,8 @@ export function UserProfile({ userId }: UserProfileProps) {
                             key={tab}
                             href="#"
                             className={`py-2 px-1 border-b-2 font-medium text-sm ${tab === 'Summary'
-                                    ? 'border-green-500 text-green-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                ? 'border-green-500 text-green-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
                         >
                             {tab}
@@ -125,7 +161,7 @@ export function UserProfile({ userId }: UserProfileProps) {
                     <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-6 relative overflow-hidden">
                         {/* Elite Member Banner */}
                         <div className="absolute top-0 left-0 right-0 bg-green-600 text-white text-center py-2 text-sm font-medium">
-                            # ELITE MEMBER #
+                            # {user.memberType || 'REGULAR'} MEMBER #
                         </div>
 
                         <div className="mt-8 text-center">
@@ -148,11 +184,11 @@ export function UserProfile({ userId }: UserProfileProps) {
                     <div className="grid grid-cols-2 gap-6">
                         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                             <h4 className="text-sm font-medium text-gray-500 mb-2">Borrowed</h4>
-                            <p className="text-2xl font-bold text-gray-900">{formatCurrency(user.totalBorrowed)}</p>
+                            <p className="text-2xl font-bold text-gray-900">{formatCurrency(user.totalBorrowed || 0)}</p>
                         </div>
                         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                             <h4 className="text-sm font-medium text-gray-500 mb-2">Repaid</h4>
-                            <p className="text-2xl font-bold text-gray-900">{formatCurrency(user.totalRepaid)}</p>
+                            <p className="text-2xl font-bold text-gray-900">{formatCurrency(user.totalRepaid || 0)}</p>
                         </div>
                     </div>
 
@@ -166,12 +202,12 @@ export function UserProfile({ userId }: UserProfileProps) {
                                 </svg>
                             </div>
                             <p className="text-2xl font-bold text-gray-900">
-                                {user.internalRiskScore?.toFixed(2)} / {user.maxRiskScore?.toFixed(2)}
+                                {user.internalRiskScore?.toFixed(2) || '0.00'} / {user.maxRiskScore?.toFixed(2) || '18.00'}
                             </p>
                         </div>
                         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                             <h4 className="text-sm font-medium text-gray-500 mb-2">Average Rate</h4>
-                            <p className="text-2xl font-bold text-gray-900">{user.averageRate?.toFixed(2)}%</p>
+                            <p className="text-2xl font-bold text-gray-900">{user.averageRate?.toFixed(2) || '0.00'}%</p>
                         </div>
                     </div>
 
@@ -218,31 +254,43 @@ export function UserProfile({ userId }: UserProfileProps) {
             {/* Active Loans Section */}
             <div className="mt-12">
                 <h3 className="text-xl font-semibold text-gray-900 mb-6">Active Loans ({userLoans?.length || 0})</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {userLoans?.map((loan) => (
-                        <div key={loan.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                            {/* Loan Image Placeholder */}
-                            <div className="h-32 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-                                <div className="text-4xl">
-                                    {loan.type === 'HOME_LOAN' && '🏠'}
-                                    {loan.type === 'CAR_LOAN' && '🚗'}
-                                    {loan.type === 'BUSINESS_LOAN' && '🏢'}
-                                    {loan.type === 'PERSONAL_LOAN' && '💼'}
-                                    {loan.type === 'EDUCATION_LOAN' && '🎓'}
+                {userLoans && userLoans.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {userLoans.map((loan) => (
+                            <div key={loan.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                {/* Loan Image Placeholder */}
+                                <div className="h-32 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+                                    <div className="text-4xl">
+                                        {loan.type === 'HOME_LOAN' && '🏠'}
+                                        {loan.type === 'CAR_LOAN' && '🚗'}
+                                        {loan.type === 'BUSINESS_LOAN' && '🏢'}
+                                        {loan.type === 'PERSONAL_LOAN' && '💼'}
+                                        {loan.type === 'EDUCATION_LOAN' && '🎓'}
+                                    </div>
+                                </div>
+
+                                <div className="p-4">
+                                    <h4 className="font-semibold text-gray-900 mb-2">
+                                        {loan.type.replace('_', ' ')}
+                                    </h4>
+                                    <p className="text-sm text-gray-500 mb-2">ID: {loan.loanNumber}</p>
+                                    <p className="text-sm text-gray-500 mb-2">Rate: {loan.rate}%</p>
+                                    <p className="text-sm text-gray-500">Start Date: {formatDate(loan.startDate)}</p>
                                 </div>
                             </div>
-
-                            <div className="p-4">
-                                <h4 className="font-semibold text-gray-900 mb-2">
-                                    {loan.type.replace('_', ' ')}
-                                </h4>
-                                <p className="text-sm text-gray-500 mb-2">ID: {loan.loanNumber}</p>
-                                <p className="text-sm text-gray-500 mb-2">Rate: {loan.rate}%</p>
-                                <p className="text-sm text-gray-500">Start Date: {formatDate(loan.startDate)}</p>
-                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-12 bg-gray-50 rounded-lg">
+                        <div className="mx-auto h-12 w-12 bg-gray-300 rounded-full flex items-center justify-center mb-4">
+                            <svg className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
                         </div>
-                    ))}
-                </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No Active Loans</h3>
+                        <p className="text-gray-500">This user doesn't have any active loans at the moment.</p>
+                    </div>
+                )}
             </div>
         </div>
     );

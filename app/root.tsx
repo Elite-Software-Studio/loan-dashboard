@@ -10,6 +10,29 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import { TRPCProvider } from "./components/TRPCProvider";
+import { AuthProvider, useAuth } from "./lib/auth";
+import { LoginScreen } from "./components/LoginScreen";
+
+function AppContent() {
+  const { user, login, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading Proloans...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginScreen onLogin={login} />;
+  }
+
+  return <Outlet />;
+}
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -44,9 +67,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <TRPCProvider>
-      <Outlet />
-    </TRPCProvider>
+    <AuthProvider>
+      <TRPCProvider>
+        <AppContent />
+      </TRPCProvider>
+    </AuthProvider>
   );
 }
 
