@@ -8,12 +8,12 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
     const { user, logout } = useAuth();
 
     const navigation = [
-        { name: 'Dashboard', href: '/', icon: '📊' },
-        { name: 'Users', href: '/users', icon: '👥', current: true },
-        { name: 'Payments', href: '/payments', icon: '💳' },
-        { name: 'Reporting', href: '/reporting', icon: '📈' },
-        { name: 'Loans', href: '/loans', icon: '💰' },
-        { name: 'Controls', href: '/controls', icon: '⚙️' },
+        { name: 'Dashboard', href: '/', icon: '📊', current: true },
+        { name: 'Users', href: '/users', icon: '👥', current: false },
+        { name: 'Payments', href: '/payments', icon: '💳', current: false },
+        { name: 'Reporting', href: '/reporting', icon: '📈', current: false },
+        { name: 'Loans', href: '/loans', icon: '💰', current: false },
+        { name: 'Controls', href: '/controls', icon: '⚙️', current: false },
     ];
 
     const handleLogout = () => {
