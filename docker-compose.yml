@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+    postgres:
+        image: postgres:15-alpine
+        container_name: loan_admin_postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: loan_admin
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+        networks:
+            - loan_admin_network
+
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        container_name: loan_admin_pgadmin
+        restart: unless-stopped
+        environment:
+            PGADMIN_DEFAULT_EMAIL: admin@loanadmin.com
+            PGADMIN_DEFAULT_PASSWORD: admin
+        ports:
+            - "8080:80"
+        depends_on:
+            - postgres
+        networks:
+            - loan_admin_network
+
+volumes:
+    postgres_data:
+
+networks:
+    loan_admin_network:
+        driver: bridge

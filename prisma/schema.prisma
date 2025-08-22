@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+  seed     = "tsx prisma/seed.ts"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Enhanced models for Proloans-style system
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String
+  role              UserRole @default(USER)
+  profileImage      String?
+  accountNumber     String   @unique
+  creditScore       Int?
+  creditScoreLastChecked DateTime?
+  internalRiskScore Float?
+  maxRiskScore      Float?
+  averageRate       Float?
+  totalBorrowed     Float   @default(0)
+  totalRepaid       Float   @default(0)
+  memberType        MemberType @default(REGULAR)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  loans             Loan[]
+  payments          Payment[]
+  documents         Document[]
+  dependents        Dependent[]
+  collaterals       Collateral[]
+
+  @@map("users")
+}
+
+model Loan {
+  id          String      @id @default(cuid())
+  loanNumber  String      @unique
+  type        LoanType
+  amount      Float
+  rate        Float
+  status      LoanStatus  @default(PENDING)
+  startDate   DateTime
+  endDate     DateTime?
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  image       String?
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("loans")
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  amount    Float
+  date      DateTime
+  type      PaymentType
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("payments")
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  name      String
+  type      DocumentType
+  url       String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("documents")
+}
+
+model Dependent {
+  id        String   @id @default(cuid())
+  name      String
+  relationship String
+  age       Int?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("dependents")
+}
+
+model Collateral {
+  id          String   @id @default(cuid())
+  type        String
+  value       Float
+  description String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@map("collaterals")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  MANAGER
+}
+
+enum MemberType {
+  REGULAR
+  ELITE
+  PREMIUM
+  VIP
+}
+
+enum LoanType {
+  HOME_LOAN
+  CAR_LOAN
+  BUSINESS_LOAN
+  PERSONAL_LOAN
+  EDUCATION_LOAN
+}
+
+enum LoanStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ACTIVE
+  PAID
+  DEFAULTED
+}
+
+enum PaymentType {
+  EMI
+  LUMP_SUM
+  PARTIAL
+}
+
+enum DocumentType {
+  ID_PROOF
+  ADDRESS_PROOF
+  INCOME_PROOF
+  BANK_STATEMENT
+  LOAN_AGREEMENT
+}
