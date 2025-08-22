@@ -537,7 +537,7 @@ export default function Users() {
                                                     value={addUserForm.name}
                                                     onChange={(e) => handleInputChange('name', e.target.value)}
                                                     placeholder="Enter full name"
-                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.name ? 'border-red-500' : 'border-gray-300'}`}
+                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.name ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
                                                 {formErrors.name && (
                                                     <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.name}</p>
@@ -554,7 +554,7 @@ export default function Users() {
                                                     value={addUserForm.email}
                                                     onChange={(e) => handleInputChange('email', e.target.value)}
                                                     placeholder="Enter email address"
-                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.email ? 'border-red-500' : 'border-gray-300'}`}
+                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.email ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
                                                 {formErrors.email && (
                                                     <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.email}</p>
@@ -587,7 +587,7 @@ export default function Users() {
                                                     value={addUserForm.accountNumber}
                                                     onChange={(e) => handleInputChange('accountNumber', e.target.value)}
                                                     placeholder="Enter account number"
-                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.accountNumber ? 'border-red-500' : 'border-gray-300'}`}
+                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.accountNumber ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
                                                 {formErrors.accountNumber && (
                                                     <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.accountNumber}</p>
@@ -609,7 +609,7 @@ export default function Users() {
                                                     value={addUserForm.creditScore}
                                                     onChange={(e) => handleInputChange('creditScore', e.target.value)}
                                                     placeholder="300-850"
-                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.creditScore ? 'border-red-500' : 'border-gray-300'}`}
+                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.creditScore ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
                                                 {formErrors.creditScore && (
                                                     <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.creditScore}</p>
@@ -629,7 +629,7 @@ export default function Users() {
                                                     value={addUserForm.internalRiskScore}
                                                     onChange={(e) => handleInputChange('internalRiskScore', e.target.value)}
                                                     placeholder="0.0-18.0"
-                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.internalRiskScore ? 'border-red-500' : 'border-gray-300'}`}
+                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.internalRiskScore ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
                                                 {formErrors.internalRiskScore && (
                                                     <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.internalRiskScore}</p>
@@ -649,7 +649,7 @@ export default function Users() {
                                                     value={addUserForm.averageRate}
                                                     onChange={(e) => handleInputChange('averageRate', e.target.value)}
                                                     placeholder="0.00-100.00"
-                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.averageRate ? 'border-red-500' : 'border-gray-300'}`}
+                                                    className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.averageRate ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
                                                 {formErrors.averageRate && (
                                                     <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.averageRate}</p>
@@ -690,7 +690,7 @@ export default function Users() {
                                                         value={addUserForm.totalBorrowed}
                                                         onChange={(e) => handleInputChange('totalBorrowed', e.target.value)}
                                                         placeholder="0.00"
-                                                        className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
+                                                        className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
                                                     />
                                                 </div>
                                             </div>
@@ -709,7 +709,7 @@ export default function Users() {
                                                         value={addUserForm.totalRepaid}
                                                         onChange={(e) => handleInputChange('totalRepaid', e.target.value)}
                                                         placeholder="0.00"
-                                                        className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
+                                                        className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
                                                     />
                                                 </div>
                                             </div>
@@ -725,7 +725,7 @@ export default function Users() {
                                                 onChange={(e) => handleInputChange('notes', e.target.value)}
                                                 rows={3}
                                                 placeholder="Add any additional notes about this user..."
-                                                className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
+                                                className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
                                             />
                                         </div>
 

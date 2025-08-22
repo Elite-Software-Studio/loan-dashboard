@@ -789,7 +789,7 @@ export default function Payments() {
                               value={addPaymentForm.paymentAmount}
                               onChange={(e) => handleInputChange('paymentAmount', e.target.value)}
                               placeholder="0.00"
-                              className={`w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.paymentAmount ? 'border-red-500' : 'border-gray-300'}`}
+                              className={`w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.paymentAmount ? 'border-red-500' : 'border-gray-300'}`}
                             />
                           </div>
                           {formErrors.paymentAmount && (
@@ -811,7 +811,7 @@ export default function Payments() {
                             type="date"
                             value={addPaymentForm.paymentDate}
                             onChange={(e) => handleInputChange('paymentDate', e.target.value)}
-                            className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.paymentDate ? 'border-red-500' : 'border-gray-300'}`}
+                            className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.paymentDate ? 'border-red-500' : 'border-gray-300'}`}
                           />
                           {formErrors.paymentDate && (
                             <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.paymentDate}</p>
@@ -826,7 +826,7 @@ export default function Payments() {
                           <select
                             value={addPaymentForm.paymentMethod}
                             onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
-                            className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.paymentMethod ? 'border-red-500' : 'border-gray-300'}`}
+                            className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.paymentMethod ? 'border-red-500' : 'border-gray-300'}`}
                           >
                             <option value="Bank Transfer">🏦 Bank Transfer</option>
                             <option value="Credit Card">💳 Credit Card</option>
@@ -850,7 +850,7 @@ export default function Payments() {
                             value={addPaymentForm.transactionId}
                             onChange={(e) => handleInputChange('transactionId', e.target.value)}
                             placeholder="Enter transaction ID if available"
-                            className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.transactionId ? 'border-red-500' : 'border-gray-300'}`}
+                            className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.transactionId ? 'border-red-500' : 'border-gray-300'}`}
                           />
                           {formErrors.transactionId && (
                             <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.transactionId}</p>
@@ -871,7 +871,7 @@ export default function Payments() {
                               value={addPaymentForm.lateFees}
                               onChange={(e) => handleInputChange('lateFees', e.target.value)}
                               placeholder="0.00"
-                              className={`w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.lateFees ? 'border-red-500' : 'border-gray-300'}`}
+                              className={`w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.lateFees ? 'border-red-500' : 'border-gray-300'}`}
                             />
                           </div>
                           {formErrors.lateFees && (
@@ -890,7 +890,7 @@ export default function Payments() {
                           onChange={(e) => handleInputChange('notes', e.target.value)}
                           rows={3}
                           placeholder="Add any additional notes about this payment..."
-                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
+                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
                         />
                       </div>
 

@@ -746,7 +746,7 @@ export default function Loans() {
                             onChange={(e) => handleInputChange('borrowerName', e.target.value)}
                             placeholder="Enter borrower's full name"
                             disabled={!!addLoanForm.selectedUserId}
-                            className={`flex-1 px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.borrowerName ? 'border-red-500' : 'border-gray-300'
+                            className={`flex-1 px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.borrowerName ? 'border-red-500' : 'border-gray-300'
                               } ${addLoanForm.selectedUserId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           />
                           {addLoanForm.selectedUserId && (
@@ -775,7 +775,7 @@ export default function Loans() {
                           onChange={(e) => handleInputChange('borrowerEmail', e.target.value)}
                           placeholder="Enter borrower's email"
                           disabled={!!addLoanForm.selectedUserId}
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.borrowerEmail ? 'border-red-500' : 'border-gray-300'
+                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.borrowerEmail ? 'border-red-500' : 'border-gray-300'
                             } ${addLoanForm.selectedUserId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         />
                         {formErrors.borrowerEmail && (
@@ -800,7 +800,7 @@ export default function Loans() {
                             value={addLoanForm.loanAmount}
                             onChange={(e) => handleInputChange('loanAmount', e.target.value)}
                             placeholder="0.00"
-                            className={`w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.loanAmount ? 'border-red-500' : 'border-gray-300'}`}
+                            className={`w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.loanAmount ? 'border-red-500' : 'border-gray-300'}`}
                           />
                         </div>
                         {formErrors.loanAmount && (
@@ -821,7 +821,7 @@ export default function Loans() {
                           value={addLoanForm.interestRate}
                           onChange={(e) => handleInputChange('interestRate', e.target.value)}
                           placeholder="0.00"
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.interestRate ? 'border-red-500' : 'border-gray-300'}`}
+                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.interestRate ? 'border-red-500' : 'border-gray-300'}`}
                         />
                         {formErrors.interestRate && (
                           <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.interestRate}</p>
@@ -839,7 +839,7 @@ export default function Loans() {
                           value={addLoanForm.term}
                           onChange={(e) => handleInputChange('term', e.target.value)}
                           placeholder="12"
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.term ? 'border-red-500' : 'border-gray-300'}`}
+                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.term ? 'border-red-500' : 'border-gray-300'}`}
                         />
                         {formErrors.term && (
                           <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.term}</p>
@@ -858,7 +858,7 @@ export default function Loans() {
                           type="date"
                           value={addLoanForm.startDate}
                           onChange={(e) => handleInputChange('startDate', e.target.value)}
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.startDate ? 'border-red-500' : 'border-gray-300'}`}
+                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.startDate ? 'border-red-500' : 'border-gray-300'}`}
                         />
                         {formErrors.startDate && (
                           <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.startDate}</p>
@@ -873,7 +873,7 @@ export default function Loans() {
                         <select
                           value={addLoanForm.loanType}
                           onChange={(e) => handleInputChange('loanType', e.target.value)}
-                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
+                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
                         >
                           <option value="PERSONAL">👤 Personal Loan</option>
                           <option value="BUSINESS">💼 Business Loan</option>
@@ -899,7 +899,7 @@ export default function Loans() {
                           value={addLoanForm.riskScore}
                           onChange={(e) => handleInputChange('riskScore', e.target.value)}
                           placeholder="0.0-18.0"
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.riskScore ? 'border-red-500' : 'border-gray-300'}`}
+                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.riskScore ? 'border-red-500' : 'border-gray-300'}`}
                         />
                         {formErrors.riskScore && (
                           <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.riskScore}</p>
@@ -919,7 +919,7 @@ export default function Loans() {
                           value={addLoanForm.maxRiskScore}
                           onChange={(e) => handleInputChange('maxRiskScore', e.target.value)}
                           placeholder="18.0"
-                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
+                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
                         />
                       </div>
                     </div>
@@ -936,7 +936,7 @@ export default function Loans() {
                           value={addLoanForm.collateral}
                           onChange={(e) => handleInputChange('collateral', e.target.value)}
                           placeholder="Describe collateral if any"
-                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
+                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
                         />
                       </div>
 
@@ -950,7 +950,7 @@ export default function Loans() {
                           onChange={(e) => handleInputChange('notes', e.target.value)}
                           rows={3}
                           placeholder="Add any additional notes about this loan..."
-                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
+                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
                         />
                       </div>
                     </div>

@@ -69,7 +69,7 @@ export function LoanManager() {
               type="email"
               value={newUser.email}
               onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-gray-300 rounded-md text-black"
               required
             />
           </div>
@@ -79,7 +79,7 @@ export function LoanManager() {
               type="text"
               value={newUser.name}
               onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-gray-300 rounded-md text-black"
               required
             />
           </div>
@@ -88,7 +88,7 @@ export function LoanManager() {
             <select
               value={newUser.role}
               onChange={(e) => setNewUser({ ...newUser, role: e.target.value as any })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-gray-300 rounded-md text-black"
             >
               <option value="USER">User</option>
               <option value="MANAGER">Manager</option>
@@ -116,7 +116,7 @@ export function LoanManager() {
               step="0.01"
               value={newLoan.amount}
               onChange={(e) => setNewLoan({ ...newLoan, amount: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-gray-300 rounded-md text-black"
               required
             />
           </div>
@@ -126,7 +126,7 @@ export function LoanManager() {
               type="text"
               value={newLoan.userId}
               onChange={(e) => setNewLoan({ ...newLoan, userId: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-gray-300 rounded-md text-black"
               required
             />
           </div>
@@ -196,10 +196,10 @@ export function LoanManager() {
                     <td className="px-4 py-2">${loan.amount.toFixed(2)}</td>
                     <td className="px-4 py-2">
                       <span className={`px-2 py-1 rounded-full text-xs ${loan.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                          loan.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                            loan.status === 'ACTIVE' ? 'bg-blue-100 text-blue-800' :
-                              loan.status === 'PAID' ? 'bg-gray-100 text-gray-800' :
-                                'bg-yellow-100 text-yellow-800'
+                        loan.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                          loan.status === 'ACTIVE' ? 'bg-blue-100 text-blue-800' :
+                            loan.status === 'PAID' ? 'bg-gray-100 text-gray-800' :
+                              'bg-yellow-100 text-yellow-800'
                         }`}>
                         {loan.status}
                       </span>
