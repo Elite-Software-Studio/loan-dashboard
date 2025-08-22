@@ -22,6 +22,7 @@ interface Loan {
 }
 
 interface AddLoanForm {
+  selectedUserId: string;
   borrowerName: string;
   borrowerEmail: string;
   loanAmount: string;
@@ -36,6 +37,7 @@ interface AddLoanForm {
 }
 
 interface FormErrors {
+  selectedUserId: string;
   borrowerName: string;
   borrowerEmail: string;
   loanAmount: string;
@@ -46,6 +48,15 @@ interface FormErrors {
   riskScore: string;
   maxRiskScore: string;
 }
+
+// Mock user data for loan creation
+const mockUsers = [
+  { id: 'user-1', name: 'John Smith', email: 'john.smith@email.com', creditScore: 750, memberType: 'PREMIUM' },
+  { id: 'user-2', name: 'Sarah Johnson', email: 'sarah.j@email.com', creditScore: 820, memberType: 'ELITE' },
+  { id: 'user-3', name: 'Mike Chen', email: 'mike.chen@email.com', creditScore: 680, memberType: 'REGULAR' },
+  { id: 'user-4', name: 'Lisa Rodriguez', email: 'lisa.r@email.com', creditScore: 720, memberType: 'PREMIUM' },
+  { id: 'user-5', name: 'David Wilson', email: 'david.w@email.com', creditScore: 790, memberType: 'VIP' }
+];
 
 // Mock loan data
 const mockLoans: Loan[] = [
@@ -157,6 +168,7 @@ export default function Loans() {
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
 
   const [addLoanForm, setAddLoanForm] = useState<AddLoanForm>({
+    selectedUserId: '',
     borrowerName: '',
     borrowerEmail: '',
     loanAmount: '',
@@ -171,6 +183,7 @@ export default function Loans() {
   });
 
   const [formErrors, setFormErrors] = useState<FormErrors>({
+    selectedUserId: '',
     borrowerName: '',
     borrowerEmail: '',
     loanAmount: '',
@@ -190,8 +203,28 @@ export default function Loans() {
     }
   };
 
+  const handleUserSelection = (userId: string) => {
+    const selectedUser = mockUsers.find(user => user.id === userId);
+    if (selectedUser) {
+      setAddLoanForm(prev => ({
+        ...prev,
+        selectedUserId: userId,
+        borrowerName: selectedUser.name,
+        borrowerEmail: selectedUser.email
+      }));
+      // Clear related errors
+      setFormErrors(prev => ({
+        ...prev,
+        selectedUserId: '',
+        borrowerName: '',
+        borrowerEmail: ''
+      }));
+    }
+  };
+
   const validateForm = (): boolean => {
     const errors: FormErrors = {
+      selectedUserId: '',
       borrowerName: '',
       borrowerEmail: '',
       loanAmount: '',
@@ -203,6 +236,7 @@ export default function Loans() {
       maxRiskScore: ''
     };
 
+    if (!addLoanForm.selectedUserId) errors.selectedUserId = 'Please select a user';
     if (!addLoanForm.borrowerName.trim()) errors.borrowerName = 'Borrower name is required';
     if (!addLoanForm.borrowerEmail.trim()) errors.borrowerEmail = 'Borrower email is required';
     if (!addLoanForm.loanAmount.trim()) errors.loanAmount = 'Loan amount is required';
@@ -306,6 +340,7 @@ export default function Loans() {
 
   const handleResetForm = () => {
     setAddLoanForm({
+      selectedUserId: '',
       borrowerName: '',
       borrowerEmail: '',
       loanAmount: '',
@@ -319,6 +354,7 @@ export default function Loans() {
       notes: ''
     });
     setFormErrors({
+      selectedUserId: '',
       borrowerName: '',
       borrowerEmail: '',
       loanAmount: '',
@@ -657,10 +693,49 @@ export default function Loans() {
 
               {/* Modal Body - Scrollable */}
               <div className="flex-1 overflow-y-auto">
-                <div className="p-8">
-                  <form onSubmit={handleSubmitLoan} className="space-y-6">
-                    {/* Basic Information */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                 <div className="p-8">
+                   <form onSubmit={handleSubmitLoan} className="space-y-6">
+                     {/* User Selection */}
+                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                       <h3 className="text-lg font-semibold text-gray-900 font-montserrat-semibold mb-4">Select User</h3>
+                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                         {mockUsers.map((user) => (
+                           <div
+                             key={user.id}
+                             onClick={() => handleUserSelection(user.id)}
+                             className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 ${
+                               addLoanForm.selectedUserId === user.id
+                                 ? 'border-green-500 bg-green-50 shadow-md'
+                                 : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
+                             }`}
+                           >
+                             <div className="flex items-center space-x-3">
+                               <div className={`w-3 h-3 rounded-full ${
+                                 addLoanForm.selectedUserId === user.id ? 'bg-green-500' : 'bg-gray-300'
+                               }`} />
+                               <div className="flex-1">
+                                 <div className="font-medium text-gray-900 font-montserrat-semibold">{user.name}</div>
+                                 <div className="text-sm text-gray-600 font-montserrat-medium">{user.email}</div>
+                                 <div className="flex items-center space-x-2 mt-1">
+                                   <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                                     {user.memberType}
+                                   </span>
+                                   <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                                     {user.creditScore}
+                                   </span>
+                                 </div>
+                               </div>
+                             </div>
+                           </div>
+                         ))}
+                       </div>
+                       {formErrors.selectedUserId && (
+                         <p className="mt-2 text-sm text-red-600 font-montserrat-medium">{formErrors.selectedUserId}</p>
+                       )}
+                     </div>
+
+                     {/* Basic Information */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Borrower Name */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
