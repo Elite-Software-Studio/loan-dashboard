@@ -249,7 +249,7 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 min-w-0 transition-all duration-700 ease-in-out lg:ml-16">
+                <div className={`flex-1 min-w-0 transition-all duration-700 ease-in-out transform ${sidebarOpen ? 'ml-64 lg:ml-64' : 'ml-0 lg:ml-16'}`}>
                     <div className="pt-20 lg:pt-24 px-4 lg:px-8">
                         {children}
                     </div>
