@@ -32,8 +32,8 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
                     <div className="flex justify-between items-center h-16">
                         {/* Logo and Brand */}
                         <div className="flex items-center">
-                            <h1 className="text-2xl font-bold text-gray-900">Proloans</h1>
-                            <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <h1 className="text-2xl font-bold text-gray-900 font-montserrat-bold">Proloans</h1>
+                            <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 font-montserrat-medium">
                                 {user?.role?.toLowerCase() || 'admin'}
                             </span>
                         </div>
@@ -91,26 +91,26 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
                                 {showUserMenu && (
                                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
                                         <div className="px-4 py-2 border-b border-gray-100">
-                                            <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                                            <p className="text-xs text-gray-500">{user?.email}</p>
-                                            <p className="text-xs text-green-600 font-medium capitalize">{user?.role}</p>
+                                            <p className="text-sm font-medium text-gray-900 font-montserrat-semibold">{user?.name}</p>
+                                            <p className="text-xs text-gray-500 font-montserrat-regular">{user?.email}</p>
+                                            <p className="text-xs text-green-600 font-medium capitalize font-montserrat-medium">{user?.role}</p>
                                         </div>
                                         <a
                                             href="#"
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-montserrat-medium"
                                         >
                                             Your Profile
                                         </a>
                                         <a
                                             href="#"
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-montserrat-medium"
                                         >
                                             Settings
                                         </a>
                                         <div className="border-t border-gray-100">
                                             <button
                                                 onClick={handleLogout}
-                                                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 font-montserrat-medium"
                                             >
                                                 Sign out
                                             </button>
@@ -133,7 +133,7 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
                                 <a
                                     key={item.name}
                                     href={item.href}
-                                    className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${item.current
+                                    className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 font-montserrat-medium ${item.current
                                         ? 'bg-green-50 text-green-700 border-r-2 border-green-500'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                         }`}

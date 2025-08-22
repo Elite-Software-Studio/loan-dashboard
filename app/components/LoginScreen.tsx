@@ -73,12 +73,12 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 {/* Logo and Brand */}
                 <div className="text-center">
                     <div className="mx-auto h-20 w-20 bg-gradient-to-br from-green-600 to-blue-600 rounded-full flex items-center justify-center mb-4">
-                        <span className="text-3xl font-bold text-white">P</span>
+                        <span className="text-3xl font-bold text-white font-montserrat-bold">P</span>
                     </div>
-                    <h2 className="text-4xl font-bold text-gray-900 mb-2">Proloans</h2>
-                    <p className="text-lg text-gray-600">Loan Administration Portal</p>
+                    <h2 className="text-4xl font-bold text-gray-900 mb-2 font-montserrat-bold">Proloans</h2>
+                    <p className="text-lg text-gray-600 font-montserrat-regular">Loan Administration Portal</p>
                     <div className="mt-2">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 font-montserrat-medium">
                             Admin Access Required
                         </span>
                     </div>
@@ -103,7 +103,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                         )}
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2 font-montserrat-medium">
                                 Email Address
                             </label>
                             <input
@@ -114,13 +114,13 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                                placeholder="Enter your email"
+                                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm font-montserrat-regular"
+                                placeholder="Enter your email address"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2 font-montserrat-medium">
                                 Password
                             </label>
                             <input
@@ -131,7 +131,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm font-montserrat-regular"
                                 placeholder="Enter your password"
                             />
                         </div>
@@ -144,13 +144,13 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                                     type="checkbox"
                                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                                 />
-                                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 font-montserrat-medium">
                                     Remember me
                                 </label>
                             </div>
 
                             <div className="text-sm">
-                                <a href="#" className="font-medium text-green-600 hover:text-green-500">
+                                <a href="#" className="font-medium text-green-600 hover:text-green-500 font-montserrat-medium">
                                     Forgot password?
                                 </a>
                             </div>
@@ -160,7 +160,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-montserrat-semibold"
                             >
                                 {isLoading ? (
                                     <div className="flex items-center">
@@ -184,7 +184,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                                 <div className="w-full border-t border-gray-300" />
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white text-gray-500">Quick Access (Demo)</span>
+                                <span className="px-2 bg-white text-gray-500 font-montserrat-medium">Quick Access (Demo)</span>
                             </div>
                         </div>
 
@@ -195,9 +195,9 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                                     onClick={() => handleTestAccount(account)}
                                     className="w-full text-left p-3 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200"
                                 >
-                                    <div className="font-medium text-gray-900">{account.role}</div>
-                                    <div className="text-gray-500 text-xs">{account.email}</div>
-                                    <div className="text-gray-400 text-xs">Click to fill credentials</div>
+                                    <div className="font-medium text-gray-900 font-montserrat-semibold">{account.role}</div>
+                                    <div className="text-gray-500 text-xs font-montserrat-regular">{account.email}</div>
+                                    <div className="text-gray-400 text-xs font-montserrat-regular">Click to fill credentials</div>
                                 </button>
                             ))}
                         </div>
@@ -206,10 +206,10 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
                 {/* Footer */}
                 <div className="text-center">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 font-montserrat-regular">
                         © 2024 Proloans. All rights reserved.
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-400 mt-1 font-montserrat-regular">
                         Version 21.1.2 • Secure Admin Portal
                     </p>
                 </div>

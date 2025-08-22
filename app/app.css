@@ -1,15 +1,55 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
+	@apply bg-white dark:bg-gray-950;
+	font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
+	@media (prefers-color-scheme: dark) {
+		color-scheme: dark;
+	}
+}
+
+/* Custom Montserrat font utilities */
+.font-montserrat {
+	font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-montserrat-light {
+	font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+	font-weight: 300;
+}
+
+.font-montserrat-regular {
+	font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+	font-weight: 400;
+}
+
+.font-montserrat-medium {
+	font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+	font-weight: 500;
+}
+
+.font-montserrat-semibold {
+	font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+	font-weight: 600;
+}
+
+.font-montserrat-bold {
+	font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+	font-weight: 700;
+}
+
+.font-montserrat-extrabold {
+	font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+	font-weight: 800;
+}
+
+.font-montserrat-black {
+	font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+	font-weight: 900;
 }
