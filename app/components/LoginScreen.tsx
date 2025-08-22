@@ -11,11 +11,13 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // Test accounts for demo purposes
+    // Test accounts that match seeded database users
     const testAccounts = [
         { email: 'admin@proloans.com', password: 'admin123', role: 'ADMIN' },
-        { email: 'manager@proloans.com', password: 'manager123', role: 'MANAGER' },
-        { email: 'user@proloans.com', password: 'user123', role: 'USER' },
+        { email: 'kiran.nair@example.com', password: 'kiran123', role: 'MANAGER' },
+        { email: 'mike.johnson@example.com', password: 'mike123', role: 'USER' },
+        { email: 'lisa.chen@example.com', password: 'lisa123', role: 'USER' },
+        { email: 'sarah.wilson@example.com', password: 'sarah123', role: 'USER' },
     ];
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -32,13 +34,13 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         );
 
         if (testAccount) {
-            // Create a mock user object
+            // Create a user object that matches the database structure
             const user = {
-                id: 'test-user-id',
+                id: `user-${testAccount.email}`, // Generate a consistent ID
                 email: testAccount.email,
                 name: testAccount.email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
                 role: testAccount.role,
-                accountNumber: 'TEST001',
+                accountNumber: `ACC${Date.now()}`, // Generate unique account number
                 creditScore: 800,
                 internalRiskScore: 16.66,
                 maxRiskScore: 18.0,
