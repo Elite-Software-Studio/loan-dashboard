@@ -693,61 +693,72 @@ export default function Loans() {
 
               {/* Modal Body - Scrollable */}
               <div className="flex-1 overflow-y-auto">
-                                 <div className="p-8">
-                   <form onSubmit={handleSubmitLoan} className="space-y-6">
-                     {/* User Selection */}
-                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-                       <h3 className="text-lg font-semibold text-gray-900 font-montserrat-semibold mb-4">Select User</h3>
-                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                         {mockUsers.map((user) => (
-                           <div
-                             key={user.id}
-                             onClick={() => handleUserSelection(user.id)}
-                             className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 ${
-                               addLoanForm.selectedUserId === user.id
-                                 ? 'border-green-500 bg-green-50 shadow-md'
-                                 : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
-                             }`}
-                           >
-                             <div className="flex items-center space-x-3">
-                               <div className={`w-3 h-3 rounded-full ${
-                                 addLoanForm.selectedUserId === user.id ? 'bg-green-500' : 'bg-gray-300'
-                               }`} />
-                               <div className="flex-1">
-                                 <div className="font-medium text-gray-900 font-montserrat-semibold">{user.name}</div>
-                                 <div className="text-sm text-gray-600 font-montserrat-medium">{user.email}</div>
-                                 <div className="flex items-center space-x-2 mt-1">
-                                   <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                                     {user.memberType}
-                                   </span>
-                                   <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
-                                     {user.creditScore}
-                                   </span>
-                                 </div>
-                               </div>
-                             </div>
-                           </div>
-                         ))}
-                       </div>
-                       {formErrors.selectedUserId && (
-                         <p className="mt-2 text-sm text-red-600 font-montserrat-medium">{formErrors.selectedUserId}</p>
-                       )}
-                     </div>
+                <div className="p-8">
+                  <form onSubmit={handleSubmitLoan} className="space-y-6">
+                    {/* User Selection */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                      <h3 className="text-lg font-semibold text-gray-900 font-montserrat-semibold mb-4">Select User</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {mockUsers.map((user) => (
+                          <div
+                            key={user.id}
+                            onClick={() => handleUserSelection(user.id)}
+                            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 ${addLoanForm.selectedUserId === user.id
+                                ? 'border-green-500 bg-green-50 shadow-md'
+                                : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
+                              }`}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-3 h-3 rounded-full ${addLoanForm.selectedUserId === user.id ? 'bg-green-500' : 'bg-gray-300'
+                                }`} />
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900 font-montserrat-semibold">{user.name}</div>
+                                <div className="text-sm text-gray-600 font-montserrat-medium">{user.email}</div>
+                                <div className="flex items-center space-x-2 mt-1">
+                                  <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                                    {user.memberType}
+                                  </span>
+                                  <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                                    {user.creditScore}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {formErrors.selectedUserId && (
+                        <p className="mt-2 text-sm text-red-600 font-montserrat-medium">{formErrors.selectedUserId}</p>
+                      )}
+                    </div>
 
-                     {/* Basic Information */}
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Basic Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Borrower Name */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
                           Borrower Name <span className="text-red-500">*</span>
                         </label>
-                        <input
-                          type="text"
-                          value={addLoanForm.borrowerName}
-                          onChange={(e) => handleInputChange('borrowerName', e.target.value)}
-                          placeholder="Enter borrower's full name"
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.borrowerName ? 'border-red-500' : 'border-gray-300'}`}
-                        />
+                        <div className="flex space-x-2">
+                          <input
+                            type="text"
+                            value={addLoanForm.borrowerName}
+                            onChange={(e) => handleInputChange('borrowerName', e.target.value)}
+                            placeholder="Enter borrower's full name"
+                            disabled={!!addLoanForm.selectedUserId}
+                            className={`flex-1 px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.borrowerName ? 'border-red-500' : 'border-gray-300'
+                              } ${addLoanForm.selectedUserId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          />
+                          {addLoanForm.selectedUserId && (
+                            <button
+                              type="button"
+                              onClick={() => handleUserSelection('')}
+                              className="px-3 py-3 text-gray-600 bg-gray-100 border border-gray-300 rounded-xl hover:bg-gray-200 transition-colors duration-200 font-montserrat-medium"
+                            >
+                              Change User
+                            </button>
+                          )}
+                        </div>
                         {formErrors.borrowerName && (
                           <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.borrowerName}</p>
                         )}
@@ -763,7 +774,9 @@ export default function Loans() {
                           value={addLoanForm.borrowerEmail}
                           onChange={(e) => handleInputChange('borrowerEmail', e.target.value)}
                           placeholder="Enter borrower's email"
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.borrowerEmail ? 'border-red-500' : 'border-gray-300'}`}
+                          disabled={!!addLoanForm.selectedUserId}
+                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.borrowerEmail ? 'border-red-500' : 'border-gray-300'
+                            } ${addLoanForm.selectedUserId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         />
                         {formErrors.borrowerEmail && (
                           <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.borrowerEmail}</p>

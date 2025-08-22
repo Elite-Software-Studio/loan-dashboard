@@ -51,8 +51,8 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow-sm border-b border-gray-200">
+            {/* Fixed Header */}
+            <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         {/* Logo and Brand */}
@@ -151,8 +151,8 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
                 </div>
             </header>
 
-            {/* Breadcrumb Navigation */}
-            <div className="hidden lg:block bg-white border-b border-gray-200 px-4 py-2">
+            {/* Fixed Breadcrumb Navigation */}
+            <div className="fixed top-16 left-0 right-0 z-40 hidden lg:block bg-white border-b border-gray-200 px-4 py-2">
                 <div className="max-w-7xl mx-auto">
                     <nav className="flex" aria-label="Breadcrumb">
                         <ol className="flex items-center space-x-2">
@@ -182,7 +182,7 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
                 </div>
             </div>
 
-            <div className="flex">
+            <div className="flex pt-16">
                 {/* Mobile Sidebar Overlay */}
                 {sidebarOpen && (
                     <div
@@ -191,8 +191,8 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
                     />
                 )}
 
-                {/* Sidebar */}
-                <div className={`${sidebarOpen ? 'w-64 translate-x-0' : 'w-16 -translate-x-full lg:translate-x-0'} fixed lg:relative inset-y-0 left-0 z-50 bg-white shadow-sm border-r border-gray-200 transition-all duration-700 ease-in-out overflow-hidden transform lg:transform-none ${sidebarOpen ? 'animate-in slide-in-from-left duration-500' : ''} ${!sidebarOpen && 'lg:shadow-lg'}`}>
+                {/* Fixed Sidebar */}
+                <div className={`${sidebarOpen ? 'w-64 translate-x-0' : 'w-16 -translate-x-full lg:translate-x-0'} fixed top-16 left-0 bottom-0 z-40 bg-white shadow-sm border-r border-gray-200 transition-all duration-700 ease-in-out overflow-hidden transform lg:transform-none ${sidebarOpen ? 'animate-in slide-in-from-left duration-500' : ''} ${!sidebarOpen && 'lg:shadow-lg'}`}>
                     <div className="p-4">
                         <button
                             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -249,8 +249,10 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 min-w-0 transition-all duration-700 ease-in-out">
-                    {children}
+                <div className="flex-1 min-w-0 transition-all duration-700 ease-in-out lg:ml-16">
+                    <div className="pt-20 lg:pt-24 px-4 lg:px-8">
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>
