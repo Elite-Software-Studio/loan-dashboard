@@ -6,7 +6,6 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const { user, logout } = useAuth();
-    const { data: currentUser } = trpc.getCurrentUser?.useQuery?.() || { data: null };
 
     const navigation = [
         { name: 'Dashboard', href: '/', icon: '📊' },

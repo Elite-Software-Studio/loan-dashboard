@@ -5,44 +5,60 @@ export function LoanManager() {
   const [newUser, setNewUser] = useState({ email: '', name: '', role: 'USER' as const });
   const [newLoan, setNewLoan] = useState({ amount: '', userId: '' });
 
+  const createUser = trpc.createUser.useMutation();
+  const createLoan = trpc.createLoan.useMutation();
   const { data: users, refetch: refetchUsers } = trpc.getUsers.useQuery();
   const { data: loans, refetch: refetchLoans } = trpc.getLoans.useQuery();
-  
-  const createUser = trpc.createUser.useMutation({
-    onSuccess: () => {
-      refetchUsers();
-      setNewUser({ email: '', name: '', role: 'USER' });
-    },
-  });
-
-  const createLoan = trpc.createLoan.useMutation({
-    onSuccess: () => {
-      refetchLoans();
-      setNewLoan({ amount: '', userId: '' });
-    },
-  });
 
   const updateLoanStatus = trpc.updateLoanStatus.useMutation({
     onSuccess: () => refetchLoans(),
   });
 
-  const handleCreateUser = (e: React.FormEvent) => {
-    e.preventDefault();
-    createUser.mutate(newUser);
+  const handleCreateUser = () => {
+    const userData = {
+      email: newUser.email,
+      name: newUser.name,
+      role: newUser.role,
+      accountNumber: `ACC${Date.now()}`, // Generate unique account number
+      creditScore: 750, // Default credit score
+      internalRiskScore: 15.0, // Default risk score
+      maxRiskScore: 18.0, // Default max risk score
+      averageRate: 12.0, // Default average rate
+      memberType: 'REGULAR' as const, // Default member type
+    };
+
+    createUser.mutate(userData, {
+      onSuccess: () => {
+        setNewUser({ email: '', name: '', role: 'USER' });
+        refetchUsers();
+      },
+    });
   };
 
-  const handleCreateLoan = (e: React.FormEvent) => {
-    e.preventDefault();
-    createLoan.mutate({
+  const handleCreateLoan = () => {
+    const loanData = {
+      loanNumber: `LOAN${Date.now()}`, // Generate unique loan number
+      type: 'PERSONAL_LOAN' as const, // Default loan type
       amount: parseFloat(newLoan.amount),
+      rate: 12.5, // Default interest rate
       userId: newLoan.userId,
+      startDate: new Date(), // Current date as start date
+      status: 'PENDING' as const, // Default status
+      description: 'New loan application', // Default description
+    };
+
+    createLoan.mutate(loanData, {
+      onSuccess: () => {
+        setNewLoan({ amount: '', userId: '' });
+        refetchLoans();
+      },
     });
   };
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-8">Loan Admin System</h1>
-      
+
       {/* Create User Form */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
         <h2 className="text-xl font-semibold mb-4">Create New User</h2>
@@ -179,13 +195,12 @@ export function LoanManager() {
                     <td className="px-4 py-2">{loan.id}</td>
                     <td className="px-4 py-2">${loan.amount.toFixed(2)}</td>
                     <td className="px-4 py-2">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        loan.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                        loan.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                        loan.status === 'ACTIVE' ? 'bg-blue-100 text-blue-800' :
-                        loan.status === 'PAID' ? 'bg-gray-100 text-gray-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
+                      <span className={`px-2 py-1 rounded-full text-xs ${loan.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                          loan.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                            loan.status === 'ACTIVE' ? 'bg-blue-100 text-blue-800' :
+                              loan.status === 'PAID' ? 'bg-gray-100 text-gray-800' :
+                                'bg-yellow-100 text-yellow-800'
+                        }`}>
                         {loan.status}
                       </span>
                     </td>
