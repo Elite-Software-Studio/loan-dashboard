@@ -704,8 +704,8 @@ export default function Loans() {
                             key={user.id}
                             onClick={() => handleUserSelection(user.id)}
                             className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 ${addLoanForm.selectedUserId === user.id
-                                ? 'border-green-500 bg-green-50 shadow-md'
-                                : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
+                              ? 'border-green-500 bg-green-50 shadow-md'
+                              : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
                               }`}
                           >
                             <div className="flex items-center space-x-3">
