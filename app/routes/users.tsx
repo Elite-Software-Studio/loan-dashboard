@@ -501,7 +501,7 @@ export default function Users() {
 
                 {/* Add User Modal */}
                 {showAddUserModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 bg-white bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4 mt-40">
                         <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-white/20">
                             {/* Modal Header - Fixed */}
                             <div className="px-8 py-6 border-b border-gray-200/50 bg-gradient-to-r from-gray-50/50 to-white/50 flex-shrink-0">
@@ -569,7 +569,7 @@ export default function Users() {
                                                 <select
                                                     value={addUserForm.role}
                                                     onChange={(e) => handleInputChange('role', e.target.value)}
-                                                    className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
+                                                    className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
                                                 >
                                                     <option value="USER">👤 User</option>
                                                     <option value="MANAGER">👨‍💼 Manager</option>
@@ -664,7 +664,7 @@ export default function Users() {
                                                 <select
                                                     value={addUserForm.memberType}
                                                     onChange={(e) => handleInputChange('memberType', e.target.value)}
-                                                    className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
                                                 >
                                                     <option value="REGULAR">👤 Regular</option>
                                                     <option value="PREMIUM">⭐ Premium</option>

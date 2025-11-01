@@ -531,7 +531,7 @@ export default function Loans() {
                   placeholder="Search by borrower, loan ID, or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               </div>
             </div>
@@ -544,7 +544,7 @@ export default function Loans() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="ALL">All Statuses</option>
                 <option value="ACTIVE">Active</option>
@@ -564,7 +564,7 @@ export default function Loans() {
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-montserrat-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="ALL">All Types</option>
                 <option value="PERSONAL">Personal</option>
@@ -671,7 +671,7 @@ export default function Loans() {
 
         {/* Add Loan Modal */}
         {showAddLoanModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-white bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4 mt-40">
             <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-white/20">
               {/* Modal Header - Fixed */}
               <div className="px-8 py-6 border-b border-gray-200/50 bg-gradient-to-r from-gray-50/50 to-white/50 flex-shrink-0">
