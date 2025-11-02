@@ -1,77 +1,107 @@
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "../../lib/router";
-import { prisma } from "../../lib/trpc";
+import { createContext } from "../../lib/trpc";
+import { API_CONFIG } from "../../lib/constants";
+import { logger } from "../../lib/logger";
 
-// Simple API handler that bypasses React Router
+/**
+ * Get allowed origin from request or use configured origin
+ */
+function getAllowedOrigin(request: Request): string {
+	const origin = request.headers.get("origin");
+	const allowedOrigin = API_CONFIG.CORS_ORIGIN === "*" ? origin || "*" : API_CONFIG.CORS_ORIGIN;
+	return allowedOrigin;
+}
+
+/**
+ * CORS headers for tRPC requests
+ */
+function getCorsHeaders(request: Request): Record<string, string> {
+	return {
+		"Access-Control-Allow-Origin": getAllowedOrigin(request),
+		"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+		"Access-Control-Allow-Headers": "Content-Type, Authorization",
+		"Access-Control-Allow-Credentials": "true",
+	};
+}
+
+/**
+ * Handle GET/OPTIONS requests (queries) for tRPC
+ */
 export async function loader({ request }: { request: Request }) {
-	const url = new URL(request.url);
-	const path = url.pathname.replace("/trpc/", "");
+	if (request.method === "OPTIONS") {
+		return new Response(null, {
+			status: 200,
+			headers: getCorsHeaders(request),
+		});
+	}
 
 	try {
-		// Handle specific tRPC procedures directly
-		if (path === "getUsers") {
-			const users = await prisma.user.findMany({
-				include: {
-					loans: true,
-				},
-				orderBy: {
-					createdAt: "desc",
-				},
-			});
-
-			return new Response(JSON.stringify({ result: { data: users } }), {
-				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-					"Access-Control-Allow-Headers": "Content-Type",
-				},
-			});
-		}
-
-		if (path === "getLoans") {
-			const loans = await prisma.loan.findMany({
-				include: {
-					user: true,
-				},
-				orderBy: {
-					createdAt: "desc",
-				},
-			});
-
-			return new Response(JSON.stringify({ result: { data: loans } }), {
-				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-					"Access-Control-Allow-Headers": "Content-Type",
-				},
-			});
-		}
-
-		// Default response for unknown procedures
-		return new Response(JSON.stringify({ error: "Unknown procedure" }), {
-			status: 404,
-			headers: {
-				"Content-Type": "application/json",
+		const response = await fetchRequestHandler({
+			endpoint: API_CONFIG.TRPC_ENDPOINT,
+			req: request,
+			router: appRouter,
+			createContext: () => createContext(request),
+			onError: ({ error, path }) => {
+				logger.error(`tRPC Error in ${path}`, error, { path });
 			},
 		});
+
+		// Add CORS headers to response
+		const corsHeaders = getCorsHeaders(request);
+		Object.entries(corsHeaders).forEach(([key, value]) => {
+			response.headers.set(key, value);
+		});
+
+		return response;
 	} catch (error) {
-		console.error("API Error:", error);
-		return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+		logger.error("Failed to handle tRPC request", error);
+		const corsHeaders = getCorsHeaders(request);
+		return new Response(JSON.stringify({ error: "Internal server error" }), {
 			status: 500,
 			headers: {
 				"Content-Type": "application/json",
+				...corsHeaders,
 			},
 		});
 	}
 }
 
-// Action function for POST requests
+/**
+ * Handle POST requests (mutations) for tRPC
+ */
 export async function action({ request }: { request: Request }) {
-	return loader({ request });
+	try {
+		const response = await fetchRequestHandler({
+			endpoint: API_CONFIG.TRPC_ENDPOINT,
+			req: request,
+			router: appRouter,
+			createContext: () => createContext(request),
+			onError: ({ error, path }) => {
+				logger.error(`tRPC Error in ${path}`, error, { path });
+			},
+		});
+
+		// Add CORS headers to response
+		const corsHeaders = getCorsHeaders(request);
+		Object.entries(corsHeaders).forEach(([key, value]) => {
+			response.headers.set(key, value);
+		});
+
+		return response;
+	} catch (error) {
+		logger.error("Failed to handle tRPC request", error);
+		const corsHeaders = getCorsHeaders(request);
+		return new Response(JSON.stringify({ error: "Internal server error" }), {
+			status: 500,
+			headers: {
+				"Content-Type": "application/json",
+				...corsHeaders,
+			},
+		});
+	}
 }
 
-// Default export for the component (required by React Router)
 export default function TRPCRoute() {
-	return null; // This route doesn't render anything
+	return null;
 }

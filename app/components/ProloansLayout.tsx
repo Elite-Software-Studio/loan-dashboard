@@ -1,23 +1,24 @@
-import { useState, useEffect, useRef } from 'react';
-import { trpc } from '../lib/trpc-client';
-import { useAuth } from '../lib/auth';
-import { useLocation, Link } from 'react-router';
+import { useState, useEffect, useRef } from "react";
+import { trpc } from "../lib/trpc-client";
+import { useAuth } from "../lib/auth";
+import { useLocation, Link } from "react-router";
+import { NAVIGATION_ITEMS } from "../lib/constants";
+import { getUserInitials } from "../lib/utils";
 
+/**
+ * Main layout component for the Proloans application
+ * Provides navigation, header, sidebar, and user menu functionality
+ *
+ * @param children - React node to render as main content
+ */
 export function ProloansLayout({ children }: { children: React.ReactNode }) {
-    const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [showUserMenu, setShowUserMenu] = useState(false);
-    const { user, logout } = useAuth();
-    const location = useLocation();
-    const userMenuRef = useRef<HTMLDivElement>(null);
+	const [sidebarOpen, setSidebarOpen] = useState(true);
+	const [showUserMenu, setShowUserMenu] = useState(false);
+	const { user, logout } = useAuth();
+	const location = useLocation();
+	const userMenuRef = useRef<HTMLDivElement>(null);
 
-    const navigation = [
-        { name: 'Dashboard', href: '/', icon: '📊' },
-        { name: 'Users', href: '/users', icon: '👥' },
-        { name: 'Payments', href: '/payments', icon: '💳' },
-        { name: 'Reporting', href: '/reporting', icon: '📈' },
-        { name: 'Loans', href: '/loans', icon: '💰' },
-        { name: 'Controls', href: '/controls', icon: '⚙️' },
-    ];
+	const navigation = NAVIGATION_ITEMS;
 
     // Function to check if a navigation item is active
     const isActiveRoute = (href: string) => {
@@ -45,9 +46,6 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
         logout();
     };
 
-    const getUserInitials = (name: string) => {
-        return name.split(' ').map(n => n[0]).join('').toUpperCase();
-    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -118,11 +116,11 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
                                     onClick={() => setShowUserMenu(!showUserMenu)}
                                     className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 hover:scale-105"
                                 >
-                                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center transition-transform duration-200 hover:scale-110">
-                                        <span className="text-sm font-medium text-white">
-                                            {getUserInitials(user?.name || 'User')}
-                                        </span>
-                                    </div>
+									<div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center transition-transform duration-200 hover:scale-110">
+										<span className="text-sm font-medium text-white">
+											{getUserInitials(user?.name || "User")}
+										</span>
+									</div>
                                     <span className="text-sm font-medium text-gray-700 transition-colors duration-200">{user?.name || 'User'}</span>
                                     <svg className="h-4 w-4 text-gray-400 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

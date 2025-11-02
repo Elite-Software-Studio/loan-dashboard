@@ -13,6 +13,55 @@ datasource db {
 }
 
 // Enhanced models for Proloans-style system
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique // e.g., "COMP001", "ACME_CORP"
+  legalName   String?  // Legal company name
+  taxId       String?  // Tax ID / EIN
+  address     String?
+  city        String?
+  state       String?
+  country     String   @default("USA")
+  phone       String?
+  email       String?
+  website     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  branches    Branch[]
+  
+  @@map("companies")
+}
+
+model Branch {
+  id          String   @id @default(cuid())
+  code        String   @unique // e.g., "BR001", "NYC", "LAX"
+  name        String
+  companyId   String   // Branch belongs to a company
+  company     Company  @relation(fields: [companyId], references: [id])
+  address     String?
+  city        String?
+  state       String?
+  country     String   @default("USA")
+  phone       String?
+  email       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  users       User[]
+  loans       Loan[]
+  payments    Payment[]
+  documents   Document[]
+  
+  @@map("branches")
+  @@index([companyId])
+}
+
 model User {
   id                String   @id @default(cuid())
   email             String   @unique
@@ -28,6 +77,8 @@ model User {
   totalBorrowed     Float   @default(0)
   totalRepaid       Float   @default(0)
   memberType        MemberType @default(REGULAR)
+  branchId          String? // User's primary branch (null for super admin)
+  branch            Branch?  @relation(fields: [branchId], references: [id])
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   
@@ -38,6 +89,7 @@ model User {
   collaterals       Collateral[]
 
   @@map("users")
+  @@index([branchId])
 }
 
 model Loan {
@@ -51,12 +103,16 @@ model Loan {
   endDate     DateTime?
   userId      String
   user        User        @relation(fields: [userId], references: [id])
+  branchId   String      // Loan is associated with a branch
+  branch      Branch      @relation(fields: [branchId], references: [id])
   image       String?
   description String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
   @@map("loans")
+  @@index([branchId])
+  @@index([userId])
 }
 
 model Payment {
@@ -66,9 +122,13 @@ model Payment {
   type      PaymentType
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  branchId String   // Payment is associated with a branch
+  branch    Branch   @relation(fields: [branchId], references: [id])
   createdAt DateTime @default(now())
 
   @@map("payments")
+  @@index([branchId])
+  @@index([userId])
 }
 
 model Document {
@@ -78,9 +138,13 @@ model Document {
   url       String
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  branchId String   // Document is associated with a branch
+  branch    Branch   @relation(fields: [branchId], references: [id])
   createdAt DateTime @default(now())
 
   @@map("documents")
+  @@index([branchId])
+  @@index([userId])
 }
 
 model Dependent {

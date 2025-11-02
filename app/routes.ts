@@ -8,6 +8,7 @@ export default [
   route("loans", "routes/loans.tsx"),
   route("reporting", "routes/reporting.tsx"),
   route("controls", "routes/controls.tsx"),
+  route("companies", "routes/companies.tsx"),
   route("api/users", "api/users.ts"),
   route("trpc/*", "api/trpc/[...trpc].ts")
 ] satisfies RouteConfig;

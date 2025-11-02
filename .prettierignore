@@ -1,0 +1,8 @@
+node_modules
+build
+.react-router
+coverage
+dist
+*.lock
+*.db
+*.db-journal
