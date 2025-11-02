@@ -99,7 +99,7 @@ export const DEFAULTS = {
  */
 export const API_CONFIG = {
 	TRPC_ENDPOINT: "/trpc",
-	CORS_ORIGIN: process.env.CORS_ORIGIN || "*",
+	CORS_ORIGIN: import.meta.env?.VITE_CORS_ORIGIN || "*",
 } as const;
 
 /**
