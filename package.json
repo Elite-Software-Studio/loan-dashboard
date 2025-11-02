@@ -14,7 +14,21 @@
 		"prisma:migrate": "prisma migrate dev",
 		"prisma:studio": "prisma studio",
 		"prisma:reset": "prisma migrate reset",
-		"prisma:seed": "prisma db seed"
+		"prisma:seed": "prisma db seed",
+		"k3d:verify": "./scripts/verify-k3d.sh",
+		"k3d:setup": "./scripts/setup-k3d.sh",
+		"k3d:create": "./scripts/setup-k3d.sh",
+		"k3d:teardown": "./scripts/teardown-k3d.sh",
+		"k3d:delete": "./scripts/teardown-k3d.sh",
+		"k3d:load": "./scripts/load-image.sh loan-admin:latest",
+		"k3d:build": "docker build -t loan-admin:latest .",
+		"k3d:build-load": "npm run k3d:build && npm run k3d:load",
+		"k3d:deploy": "kubectl apply -f k8s/",
+		"k3d:status": "kubectl get all -n loan-admin",
+		"k3d:logs": "kubectl logs -n loan-admin -l app=loan-admin -f",
+		"k3d:logs:postgres": "kubectl logs -n loan-admin -l app=postgres -f",
+		"k3d:port-forward": "kubectl port-forward -n loan-admin service/loan-admin-service 3000:80",
+		"k3d:full": "npm run k3d:build-load && npm run k3d:deploy && npm run k3d:status"
 	},
 	"dependencies": {
 		"@prisma/client": "^6.14.0",
