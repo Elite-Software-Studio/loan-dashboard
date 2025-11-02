@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-admin-app
+  namespace: loan-admin
+  labels:
+    app: loan-admin
+    component: frontend
+spec:
+  replicas: 2  # Scale as needed
+  selector:
+    matchLabels:
+      app: loan-admin
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: loan-admin
+        component: frontend
+    spec:
+      containers:
+      - name: app
+        image: loan-admin:latest  # Replace with your registry/image
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: loan-admin-config
+              key: NODE_ENV
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: loan-admin-config
+              key: APP_PORT
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: loan-admin-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: loan-admin-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: loan-admin-config
+              key: POSTGRES_PORT
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: loan-admin-secrets
+              key: POSTGRES_PASSWORD
+        - name: SEED_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: loan-admin-config
+              key: SEED_DATABASE
+        # Construct DATABASE_URL from components
+        - name: DATABASE_URL_POSTGRESQL
+          value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres-service:5432/$(POSTGRES_DB)"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+      # Optional: Add init container for database readiness check
+      initContainers:
+      - name: wait-for-db
+        image: postgres:15-alpine
+        command: ['sh', '-c', 'until pg_isready -h postgres-service -p 5432; do sleep 2; done']
+      restartPolicy: Always
+

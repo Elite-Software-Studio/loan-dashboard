@@ -6,33 +6,66 @@ services:
         container_name: loan_admin_postgres
         restart: unless-stopped
         environment:
-            POSTGRES_DB: loan_admin
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: ${POSTGRES_DB:-loan_admin}
+            POSTGRES_USER: ${POSTGRES_USER:-postgres}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
         ports:
-            - "5432:5432"
+            - "${POSTGRES_PORT:-5432}:5432"
         volumes:
             - postgres_data:/var/lib/postgresql/data
-            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+            - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
         networks:
             - loan_admin_network
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: loan_admin_app
+        restart: unless-stopped
+        environment:
+            NODE_ENV: production
+            DATABASE_URL_POSTGRESQL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-loan_admin}
+            PORT: ${APP_PORT:-3000}
+            SEED_DATABASE: ${SEED_DATABASE:-false}
+        ports:
+            - "${APP_PORT:-3000}:3000"
+        depends_on:
+            postgres:
+                condition: service_healthy
+        networks:
+            - loan_admin_network
+        healthcheck:
+            test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
 
     pgadmin:
         image: dpage/pgadmin4:latest
         container_name: loan_admin_pgadmin
         restart: unless-stopped
         environment:
-            PGADMIN_DEFAULT_EMAIL: admin@loanadmin.com
-            PGADMIN_DEFAULT_PASSWORD: admin
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@loanadmin.com}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
         ports:
-            - "8080:80"
+            - "${PGADMIN_PORT:-8080}:80"
         depends_on:
             - postgres
         networks:
             - loan_admin_network
+        profiles:
+            - tools # Only start with --profile tools
 
 volumes:
     postgres_data:
+        driver: local
 
 networks:
     loan_admin_network:
