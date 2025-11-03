@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { trpc } from '../lib/trpc-client';
+import { useState, useEffect } from 'react';
 import { ModalForm } from './ModalForm';
 import { FormField, FormInput, FormSelect, FormGrid, FormSection } from './FormField';
 
@@ -69,38 +68,95 @@ export function BranchManagement() {
     };
 
     const [branchForm, setBranchForm] = useState<AddBranchForm>(getDefaultFormValues());
+    const [branches, setBranches] = useState<Branch[]>([]);
+    const [companies, setCompanies] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // tRPC hooks
-    const { data: branches, isLoading, refetch } = trpc.getBranches.useQuery();
-    const { data: companies } = trpc.getCompanies.useQuery();
-    const createBranch = trpc.createBranch.useMutation({
-        onSuccess: () => {
-            setShowAddModal(false);
-            setBranchForm(getDefaultFormValues());
-            refetch();
-        },
-        onError: (error) => {
-            alert(`Error creating branch: ${error.message}`);
-        },
-    });
+    // Fetch branches and companies
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const [branchesRes, companiesRes] = await Promise.all([
+                    fetch('/api/branches'),
+                    fetch('/api/companies'),
+                ]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+                if (!branchesRes.ok || !companiesRes.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+
+                // Check content types before parsing
+                const branchesContentType = branchesRes.headers.get('content-type');
+                const companiesContentType = companiesRes.headers.get('content-type');
+                
+                if (!branchesContentType || !branchesContentType.includes('application/json')) {
+                    const text = await branchesRes.text();
+                    throw new Error(`Branches API returned non-JSON: ${text.substring(0, 100)}`);
+                }
+                
+                if (!companiesContentType || !companiesContentType.includes('application/json')) {
+                    const text = await companiesRes.text();
+                    throw new Error(`Companies API returned non-JSON: ${text.substring(0, 100)}`);
+                }
+
+                const branchesData = await branchesRes.json();
+                const companiesData = await companiesRes.json();
+                setBranches(branchesData);
+                setCompanies(companiesData);
+            } catch (err) {
+                console.error('Error fetching data:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!branchForm.companyId) {
-            alert('Please select a company');
+            console.error('Please select a company');
             return;
         }
-        createBranch.mutate({
-            code: branchForm.code,
-            name: branchForm.name,
-            companyId: branchForm.companyId,
-            address: branchForm.address || undefined,
-            city: branchForm.city || undefined,
-            state: branchForm.state || undefined,
-            country: branchForm.country,
-            phone: branchForm.phone || undefined,
-            email: branchForm.email || undefined,
-        });
+
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch('/api/branches', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'create',
+                    ...branchForm,
+                }),
+            });
+
+            // Check if response is JSON before parsing
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+            }
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to create branch');
+            }
+
+            const newBranch = await response.json();
+            setBranches(prev => [newBranch, ...prev]);
+            setShowAddModal(false);
+            setBranchForm(getDefaultFormValues());
+        } catch (error: any) {
+            console.error('Error creating branch:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleInputChange = (field: keyof AddBranchForm, value: string) => {
@@ -297,7 +353,7 @@ export function BranchManagement() {
                 title="Create New Branch"
                 description="Add a new branch to a company"
                 submitLabel="Create Branch"
-                isLoading={createBranch.isPending}
+                isLoading={isSubmitting}
                 submitDisabled={!companies || companies.length === 0}
             >
                 <FormSection>

@@ -98,7 +98,6 @@ export const DEFAULTS = {
  * API configuration
  */
 export const API_CONFIG = {
-	TRPC_ENDPOINT: "/trpc",
 	CORS_ORIGIN: import.meta.env?.VITE_CORS_ORIGIN || "*",
 } as const;
 
@@ -115,8 +114,6 @@ export const STORAGE_KEYS = {
  */
 export const NAVIGATION_ITEMS = [
 	{ name: "Dashboard", href: "/", icon: "📊" },
-	{ name: "Users", href: "/users", icon: "👥" },
-	{ name: "Companies", href: "/companies", icon: "🏢" },
 	{ name: "Payments", href: "/payments", icon: "💳" },
 	{ name: "Reporting", href: "/reporting", icon: "📈" },
 	{ name: "Loans", href: "/loans", icon: "💰" },

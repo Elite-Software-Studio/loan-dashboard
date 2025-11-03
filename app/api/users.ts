@@ -1,4 +1,4 @@
-import { prisma } from "../lib/trpc";
+import { prisma } from "../lib/prisma";
 
 export async function loader() {
 	try {
@@ -30,6 +30,8 @@ export async function loader() {
 	}
 }
 
-export default function UsersAPI() {
+// Resource route - loader handles all requests
+// Minimal component export for React Router to recognize this as a resource route
+export default function UsersResource() {
 	return null;
 }

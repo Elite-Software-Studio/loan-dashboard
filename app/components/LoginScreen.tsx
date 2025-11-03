@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { trpc } from '../lib/trpc-client';
 
 interface LoginScreenProps {
     onLogin: (user: any) => void;

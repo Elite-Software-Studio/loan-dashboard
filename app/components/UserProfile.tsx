@@ -1,4 +1,4 @@
-import { trpc } from '../lib/trpc-client';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../lib/auth';
 
 interface UserProfileProps {
@@ -7,8 +7,39 @@ interface UserProfileProps {
 
 export function UserProfile({ userId }: UserProfileProps) {
     const { user: currentUser } = useAuth();
-    const { data: user, isLoading } = trpc.getUser.useQuery({ id: userId });
-    const { data: userLoans } = trpc.getUserLoans.useQuery({ userId });
+    const [user, setUser] = useState<any>(null);
+    const [userLoans, setUserLoans] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            setIsLoading(true);
+            try {
+                const [userRes, loansRes] = await Promise.all([
+                    fetch(`/api/users?id=${userId}`),
+                    fetch(`/api/users/${userId}/loans`).catch(() => null),
+                ]);
+
+                if (userRes && userRes.ok) {
+                    const userData = await userRes.json();
+                    setUser(userData);
+                }
+
+                if (loansRes && loansRes.ok) {
+                    const loansData = await loansRes.json();
+                    setUserLoans(loansData);
+                }
+            } catch (err) {
+                console.error('Error fetching user data:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (userId) {
+            fetchUserData();
+        }
+    }, [userId]);
 
     if (isLoading) {
         return (
@@ -168,7 +199,7 @@ export function UserProfile({ userId }: UserProfileProps) {
                             {/* Profile Picture */}
                             <div className="mx-auto w-24 h-24 bg-gray-300 rounded-full flex items-center justify-center mb-4">
                                 <span className="text-2xl font-bold text-gray-600">
-                                    {user.name.split(' ').map(n => n[0]).join('')}
+                                    {user.name.split(' ').map((n: string) => n[0]).join('')}
                                 </span>
                             </div>
 

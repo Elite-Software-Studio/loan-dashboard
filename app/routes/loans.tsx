@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router';
 import { ProloansLayout } from '../components/ProloansLayout';
+import { DataTable, type Column } from '../components/DataTable';
 
 interface Loan {
   id: string;
@@ -425,6 +426,90 @@ export default function Loans() {
     return matchesSearch && matchesStatus && matchesType;
   });
 
+  // Define table columns
+  const columns: Column<Loan>[] = useMemo(() => [
+    {
+      key: 'loanDetails',
+      header: 'Loan Details',
+      render: (_, loan) => (
+        <Link to={`/loan?id=${loan.id}`} className="block" onClick={(e) => e.stopPropagation()}>
+          <div className="text-sm font-medium text-gray-900 font-montserrat-semibold">{loan.id}</div>
+          <div className="text-sm text-gray-500 font-montserrat-medium">
+            {formatDate(loan.startDate)}
+          </div>
+        </Link>
+      ),
+    },
+    {
+      key: 'borrower',
+      header: 'Borrower',
+      render: (_, loan) => (
+        <div>
+          <div className="text-sm font-medium text-gray-900 font-montserrat-semibold">{loan.borrowerName}</div>
+          <div className="text-sm text-gray-500 font-montserrat-medium">{loan.borrowerEmail}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'amount',
+      header: 'Amount & Balance',
+      render: (_, loan) => (
+        <div>
+          <div className="text-sm font-medium text-gray-900 font-montserrat-semibold">
+            {formatCurrency(loan.loanAmount)}
+          </div>
+          <div className="text-sm text-gray-500 font-montserrat-medium">
+            Balance: {formatCurrency(loan.remainingBalance)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'terms',
+      header: 'Terms',
+      render: (_, loan) => (
+        <div>
+          <div className="text-sm font-medium text-gray-900 font-montserrat-semibold">
+            {loan.term} months
+          </div>
+          <div className="text-sm text-gray-500 font-montserrat-medium">
+            {loan.interestRate}% APR
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status & Type',
+      render: (_, loan) => (
+        <div className="space-y-2">
+          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(loan.status)}`}>
+            {loan.status}
+          </span>
+          <div>
+            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(loan.loanType)}`}>
+              {loan.loanType}
+            </span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'risk',
+      header: 'Risk & Next Due',
+      render: (_, loan) => (
+        <div>
+          <div className={`text-sm font-medium font-montserrat-semibold ${getRiskColor(loan.riskScore, loan.maxRiskScore)}`}>
+            Risk: {loan.riskScore.toFixed(1)}/{loan.maxRiskScore.toFixed(1)}
+          </div>
+          <div className="text-sm text-gray-500 font-montserrat-medium">
+            Due: {formatDate(loan.nextDueDate)}
+          </div>
+        </div>
+      ),
+    },
+  ], []);
+
   // Calculate summary statistics
   const totalLoans = loans.length;
   const activeLoans = loans.filter(loan => loan.status === 'ACTIVE').length;
@@ -578,96 +663,19 @@ export default function Loans() {
         </div>
 
         {/* Loans Table */}
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                    Loan Details
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                    Borrower
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                    Amount & Balance
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                    Terms
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                    Status & Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                    Risk & Next Due
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredLoans.map((loan) => (
-                  <tr key={loan.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Link to={`/loan?id=${loan.id}`} className="block">
-                        <div className="text-sm font-medium text-gray-900 font-montserrat-semibold">{loan.id}</div>
-                        <div className="text-sm text-gray-500 font-montserrat-medium">
-                          {formatDate(loan.startDate)}
-                        </div>
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900 font-montserrat-semibold">{loan.borrowerName}</div>
-                        <div className="text-sm text-gray-500 font-montserrat-medium">{loan.borrowerEmail}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900 font-montserrat-semibold">
-                          {formatCurrency(loan.loanAmount)}
-                        </div>
-                        <div className="text-sm text-gray-500 font-montserrat-medium">
-                          Balance: {formatCurrency(loan.remainingBalance)}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900 font-montserrat-semibold">
-                          {loan.term} months
-                        </div>
-                        <div className="text-sm text-gray-500 font-montserrat-medium">
-                          {loan.interestRate}% APR
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="space-y-2">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(loan.status)}`}>
-                          {loan.status}
-                        </span>
-                        <div>
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(loan.loanType)}`}>
-                            {loan.loanType}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className={`text-sm font-medium font-montserrat-semibold ${getRiskColor(loan.riskScore, loan.maxRiskScore)}`}>
-                          Risk: {loan.riskScore.toFixed(1)}/{loan.maxRiskScore.toFixed(1)}
-                        </div>
-                        <div className="text-sm text-gray-500 font-montserrat-medium">
-                          Due: {formatDate(loan.nextDueDate)}
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <DataTable
+          data={filteredLoans}
+          columns={columns}
+          isLoading={false}
+          emptyMessage="No loans found"
+          emptyDescription={searchQuery || statusFilter !== 'ALL' || typeFilter !== 'ALL'
+            ? 'Try adjusting your filters.'
+            : 'Get started by creating a new loan.'}
+          keyExtractor={(loan) => loan.id}
+          onRowClick={(loan) => {
+            window.location.href = `/loan?id=${loan.id}`;
+          }}
+        />
 
         {/* Add Loan Modal */}
         {showAddLoanModal && (

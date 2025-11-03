@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { trpc } from '../lib/trpc-client';
+import { useState, useEffect } from 'react';
 import { ModalForm } from './ModalForm';
 import { FormField, FormInput, FormGrid, FormSection } from './FormField';
 
@@ -75,35 +74,76 @@ export function CompanyManagement() {
     };
 
     const [companyForm, setCompanyForm] = useState<AddCompanyForm>(getDefaultFormValues());
+    const [companies, setCompanies] = useState<Company[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // tRPC hooks
-    const { data: companies, isLoading, refetch } = trpc.getCompanies.useQuery();
-    const createCompany = trpc.createCompany.useMutation({
-        onSuccess: () => {
+    // Fetch companies
+    useEffect(() => {
+        const fetchCompanies = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetch('/api/companies');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Check if response is JSON before parsing
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+                }
+                
+                const data = await response.json();
+                setCompanies(data);
+            } catch (err) {
+                console.error('Error fetching companies:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCompanies();
+    }, []);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch('/api/companies', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'create',
+                    ...companyForm,
+                }),
+            });
+
+            // Check if response is JSON before parsing
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+            }
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to create company');
+            }
+
+            const newCompany = await response.json();
+            setCompanies(prev => [newCompany, ...prev]);
             setShowAddModal(false);
             setCompanyForm(getDefaultFormValues());
-            refetch();
-        },
-        onError: (error) => {
-            alert(`Error creating company: ${error.message}`);
-        },
-    });
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        createCompany.mutate({
-            name: companyForm.name,
-            code: companyForm.code,
-            legalName: companyForm.legalName || undefined,
-            taxId: companyForm.taxId || undefined,
-            address: companyForm.address || undefined,
-            city: companyForm.city || undefined,
-            state: companyForm.state || undefined,
-            country: companyForm.country,
-            phone: companyForm.phone || undefined,
-            email: companyForm.email || undefined,
-            website: companyForm.website || undefined,
-        });
+        } catch (error: any) {
+            console.error('Error creating company:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleInputChange = (field: keyof AddCompanyForm, value: string) => {
@@ -288,7 +328,7 @@ export function CompanyManagement() {
                 title="Create New Company"
                 description="Add a new company to the system"
                 submitLabel="Create Company"
-                isLoading={createCompany.isPending}
+                isLoading={isSubmitting}
             >
                 <FormSection>
                     <FormGrid>

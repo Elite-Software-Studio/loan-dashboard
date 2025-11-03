@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProloansLayout } from '../components/ProloansLayout';
-import { trpc } from '../lib/trpc-client';
 
 interface Company {
     id: string;
@@ -81,35 +80,61 @@ export default function Companies() {
     };
 
     const [companyForm, setCompanyForm] = useState<AddCompanyForm>(getDefaultFormValues());
+    const [companies, setCompanies] = useState<Company[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // tRPC hooks
-    const { data: companies, isLoading, refetch } = trpc.getCompanies.useQuery();
-    const createCompany = trpc.createCompany.useMutation({
-        onSuccess: () => {
+    // Fetch companies
+    useEffect(() => {
+        const fetchCompanies = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetch('/api/companies');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setCompanies(data);
+            } catch (err) {
+                console.error('Error fetching companies:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCompanies();
+    }, []);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch('/api/companies', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'create',
+                    ...companyForm,
+                }),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to create company');
+            }
+
+            const newCompany = await response.json();
+            setCompanies(prev => [newCompany, ...prev]);
             setShowAddModal(false);
             setCompanyForm(getDefaultFormValues());
-            refetch();
-        },
-        onError: (error) => {
-            alert(`Error creating company: ${error.message}`);
-        },
-    });
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        createCompany.mutate({
-            name: companyForm.name,
-            code: companyForm.code,
-            legalName: companyForm.legalName || undefined,
-            taxId: companyForm.taxId || undefined,
-            address: companyForm.address || undefined,
-            city: companyForm.city || undefined,
-            state: companyForm.state || undefined,
-            country: companyForm.country,
-            phone: companyForm.phone || undefined,
-            email: companyForm.email || undefined,
-            website: companyForm.website || undefined,
-        });
+        } catch (error: any) {
+            console.error('Error creating company:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleInputChange = (field: keyof AddCompanyForm, value: string) => {
@@ -487,10 +512,10 @@ export default function Companies() {
                                             </button>
                                             <button
                                                 type="submit"
-                                                disabled={createCompany.isPending}
+                                                disabled={isSubmitting}
                                                 className="bg-green-600 text-white px-6 py-3 rounded-xl font-montserrat-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                             >
-                                                {createCompany.isPending ? 'Creating...' : 'Create Company'}
+                                                {isSubmitting ? 'Creating...' : 'Create Company'}
                                             </button>
                                         </div>
                                     </form>

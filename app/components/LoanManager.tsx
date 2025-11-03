@@ -1,58 +1,72 @@
-import { trpc } from '../lib/trpc-client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function LoanManager() {
   const [newUser, setNewUser] = useState({ email: '', name: '', role: 'USER' as const });
   const [newLoan, setNewLoan] = useState({ amount: '', userId: '' });
+  const [users, setUsers] = useState<any[]>([]);
+  const [loans, setLoans] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmittingUser, setIsSubmittingUser] = useState(false);
+  const [isSubmittingLoan, setIsSubmittingLoan] = useState(false);
 
-  const createUser = trpc.createUser.useMutation();
-  const createLoan = trpc.createLoan.useMutation();
-  const { data: users, refetch: refetchUsers } = trpc.getUsers.useQuery();
-  const { data: loans, refetch: refetchLoans } = trpc.getLoans.useQuery();
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [usersRes, loansRes] = await Promise.all([
+          fetch('/api/users').catch(() => null),
+          fetch('/api/loans').catch(() => null),
+        ]);
 
-  const updateLoanStatus = trpc.updateLoanStatus.useMutation({
-    onSuccess: () => refetchLoans(),
-  });
+        if (usersRes && usersRes.ok) {
+          const usersData = await usersRes.json();
+          setUsers(usersData);
+        }
 
-  const handleCreateUser = () => {
-    const userData = {
-      email: newUser.email,
-      name: newUser.name,
-      role: newUser.role,
-      accountNumber: `ACC${Date.now()}`, // Generate unique account number
-      creditScore: 750, // Default credit score
-      internalRiskScore: 15.0, // Default risk score
-      maxRiskScore: 18.0, // Default max risk score
-      averageRate: 12.0, // Default average rate
-      memberType: 'REGULAR' as const, // Default member type
+        if (loansRes && loansRes.ok) {
+          const loansData = await loansRes.json();
+          setLoans(loansData);
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    createUser.mutate(userData, {
-      onSuccess: () => {
-        setNewUser({ email: '', name: '', role: 'USER' });
-        refetchUsers();
-      },
-    });
+    fetchData();
+  }, []);
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingUser(true);
+
+    try {
+      // Note: User creation should go through /api/users POST endpoint
+      // TODO: Implement user creation API
+      console.log('User creation via API endpoint - to be implemented');
+      setNewUser({ email: '', name: '', role: 'USER' });
+    } catch (error) {
+      console.error('Error creating user:', error);
+    } finally {
+      setIsSubmittingUser(false);
+    }
   };
 
-  const handleCreateLoan = () => {
-    const loanData = {
-      loanNumber: `LOAN${Date.now()}`, // Generate unique loan number
-      type: 'PERSONAL_LOAN' as const, // Default loan type
-      amount: parseFloat(newLoan.amount),
-      rate: 12.5, // Default interest rate
-      userId: newLoan.userId,
-      startDate: new Date(), // Current date as start date
-      status: 'PENDING' as const, // Default status
-      description: 'New loan application', // Default description
-    };
+  const handleCreateLoan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingLoan(true);
 
-    createLoan.mutate(loanData, {
-      onSuccess: () => {
-        setNewLoan({ amount: '', userId: '' });
-        refetchLoans();
-      },
-    });
+    try {
+      // Note: Loan creation should go through /api/loans POST endpoint
+      // TODO: Implement loan creation API
+      console.log('Loan creation via API endpoint - to be implemented');
+      setNewLoan({ amount: '', userId: '' });
+    } catch (error) {
+      console.error('Error creating loan:', error);
+    } finally {
+      setIsSubmittingLoan(false);
+    }
   };
 
   return (
@@ -97,10 +111,10 @@ export function LoanManager() {
           </div>
           <button
             type="submit"
-            disabled={createUser.isPending}
+            disabled={isSubmittingUser}
             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
           >
-            {createUser.isPending ? 'Creating...' : 'Create User'}
+            {isSubmittingUser ? 'Creating...' : 'Create User'}
           </button>
         </form>
       </div>
@@ -132,10 +146,10 @@ export function LoanManager() {
           </div>
           <button
             type="submit"
-            disabled={createLoan.isPending}
+            disabled={isSubmittingLoan}
             className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:opacity-50"
           >
-            {createLoan.isPending ? 'Creating...' : 'Create Loan'}
+            {isSubmittingLoan ? 'Creating...' : 'Create Loan'}
           </button>
         </form>
       </div>
@@ -143,7 +157,9 @@ export function LoanManager() {
       {/* Users List */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
         <h2 className="text-xl font-semibold mb-4">Users</h2>
-        {users ? (
+        {isLoading ? (
+          <p>Loading users...</p>
+        ) : users.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full table-auto">
               <thead>
@@ -169,14 +185,16 @@ export function LoanManager() {
             </table>
           </div>
         ) : (
-          <p>Loading users...</p>
+          <p>No users found</p>
         )}
       </div>
 
       {/* Loans List */}
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-4">Loans</h2>
-        {loans ? (
+        {isLoading ? (
+          <p>Loading loans...</p>
+        ) : loans.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full table-auto">
               <thead>
@@ -204,15 +222,15 @@ export function LoanManager() {
                         {loan.status}
                       </span>
                     </td>
-                    <td className="px-4 py-2">{loan.user.name}</td>
-                    <td className="px-4 py-2">{new Date(loan.createdAt).toLocaleDateString()}</td>
+                    <td className="px-4 py-2">{loan.user?.name || 'N/A'}</td>
+                    <td className="px-4 py-2">{loan.createdAt ? new Date(loan.createdAt).toLocaleDateString() : 'N/A'}</td>
                     <td className="px-4 py-2">
                       <select
                         value={loan.status}
-                        onChange={(e) => updateLoanStatus.mutate({
-                          id: loan.id,
-                          status: e.target.value as any
-                        })}
+                        onChange={async (e) => {
+                          // Note: Update loan status via API endpoint - to be implemented
+                          console.log('Loan status update via API endpoint - to be implemented');
+                        }}
                         className="p-1 border border-gray-300 rounded text-xs"
                       >
                         <option value="PENDING">Pending</option>
@@ -228,7 +246,7 @@ export function LoanManager() {
             </table>
           </div>
         ) : (
-          <p>Loading loans...</p>
+          <p>No loans found</p>
         )}
       </div>
     </div>

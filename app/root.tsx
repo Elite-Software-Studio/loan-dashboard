@@ -9,7 +9,6 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { TRPCProvider } from "./components/TRPCProvider";
 import { AuthProvider, useAuth } from "./lib/auth";
 import { LoginScreen } from "./components/LoginScreen";
 
@@ -68,9 +67,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <AuthProvider>
-      <TRPCProvider>
-        <AppContent />
-      </TRPCProvider>
+      <AppContent />
     </AuthProvider>
   );
 }

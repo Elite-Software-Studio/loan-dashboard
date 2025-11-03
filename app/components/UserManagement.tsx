@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router';
-import { trpc } from '../lib/trpc-client';
 import { ModalForm } from './ModalForm';
 import { FormField, FormInput, FormSelect, FormTextarea, FormCurrencyInput, FormGrid, FormSection } from './FormField';
+import { DataTable, type Column } from './DataTable';
 
 interface AddUserForm {
     name: string;
@@ -107,23 +107,38 @@ export function UserManagement() {
         memberType: ''
     });
 
-    // Try to use tRPC, fallback to API
-    const { data: tRPCUsers, isLoading: tRPCLoading } = trpc.getUsers.useQuery(undefined, {
-        enabled: false, // We'll use the manual fetch for now
-    });
-
+    // Fetch users from API
     useEffect(() => {
         const fetchUsers = async () => {
+            setIsLoading(true);
             try {
                 const response = await fetch('/api/users');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                setUsers(data);
+                // Map API response to User interface
+                const mappedUsers: User[] = data.map((user: any) => ({
+                    id: user.id,
+                    email: user.email || '',
+                    name: user.name || '',
+                    role: user.role || 'USER',
+                    accountNumber: user.accountNumber || '',
+                    creditScore: user.creditScore ?? undefined,
+                    internalRiskScore: user.internalRiskScore ?? undefined,
+                    maxRiskScore: user.maxRiskScore ?? undefined,
+                    averageRate: user.averageRate ?? undefined,
+                    totalBorrowed: user.totalBorrowed || 0,
+                    totalRepaid: user.totalRepaid || 0,
+                    memberType: user.memberType || 'REGULAR',
+                    loans: user.loans || [],
+                }));
+                setUsers(mappedUsers);
+                setError(null);
             } catch (err) {
-                console.log('API failed:', err);
-                setError('Failed to load users');
+                console.error('API Error:', err);
+                setError(err instanceof Error ? err.message : 'Failed to load users');
+                setUsers([]);
             } finally {
                 setIsLoading(false);
             }
@@ -258,6 +273,105 @@ export function UserManagement() {
         );
     });
 
+    // Define table columns
+    const columns: Column<User>[] = useMemo(() => [
+        {
+            key: 'user',
+            header: 'User',
+            render: (_, user) => (
+                <Link to={`/user?id=${user.id}`} className="block" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                                {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </div>
+                        </div>
+                        <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                            <div className="text-sm text-gray-500">{user.email}</div>
+                        </div>
+                    </div>
+                </Link>
+            ),
+        },
+        {
+            key: 'role',
+            header: 'Role',
+            render: (_, user) => (
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                    user.role === 'MANAGER' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                }`}>
+                    {user.role}
+                </span>
+            ),
+        },
+        {
+            key: 'accountNumber',
+            header: 'Account',
+            render: (value) => <span className="text-sm text-gray-900">{value}</span>,
+        },
+        {
+            key: 'creditScore',
+            header: 'Credit Score',
+            render: (_, user) => (
+                <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-900">{user.creditScore || 'N/A'}</span>
+                    {user.creditScore && (
+                        <span className={`ml-2 text-xs ${
+                            (user.creditScore || 0) >= 750 ? 'text-green-600' :
+                            (user.creditScore || 0) >= 700 ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                            {(user.creditScore || 0) >= 750 ? 'EXCELLENT' :
+                                (user.creditScore || 0) >= 700 ? 'GOOD' : 'FAIR'}
+                        </span>
+                    )}
+                </div>
+            ),
+        },
+        {
+            key: 'riskScore',
+            header: 'Risk Score',
+            render: (_, user) => (
+                <span className="text-sm text-gray-900">
+                    {user.internalRiskScore?.toFixed(2) || 'N/A'} / {user.maxRiskScore?.toFixed(2) || '18.0'}
+                </span>
+            ),
+        },
+        {
+            key: 'totalBorrowed',
+            header: 'Total Borrowed',
+            render: (_, user) => (
+                <span className="text-sm font-medium text-gray-900">
+                    {formatCurrency(user.totalBorrowed)}
+                </span>
+            ),
+        },
+        {
+            key: 'totalRepaid',
+            header: 'Total Repaid',
+            render: (_, user) => (
+                <span className="text-sm font-medium text-gray-900">
+                    {formatCurrency(user.totalRepaid)}
+                </span>
+            ),
+        },
+        {
+            key: 'memberType',
+            header: 'Member Type',
+            render: (_, user) => (
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    user.memberType === 'ELITE' ? 'bg-purple-100 text-purple-800' :
+                    user.memberType === 'PREMIUM' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                }`}>
+                    {user.memberType || 'REGULAR'}
+                </span>
+            ),
+        },
+    ], []);
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -316,131 +430,19 @@ export function UserManagement() {
                 <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
                     <p className="text-red-800 font-montserrat-medium">{error}</p>
                 </div>
-            ) : filteredUsers.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-                    <svg
-                        className="mx-auto h-12 w-12 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    <h3 className="mt-2 text-sm font-medium text-gray-900 font-montserrat-medium">No users found</h3>
-                    <p className="mt-1 text-sm text-gray-500 font-montserrat-regular">
-                        {searchQuery ? 'Try adjusting your search criteria.' : 'Get started by creating a new user.'}
-                    </p>
-                    {!searchQuery && (
-                        <div className="mt-6">
-                            <button
-                                onClick={() => setShowAddUserModal(true)}
-                                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-montserrat-medium transition-colors inline-flex items-center space-x-2"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                <span>Add User</span>
-                            </button>
-                        </div>
-                    )}
-                </div>
             ) : (
-                <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                                        User
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                                        Role
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                                        Account
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                                        Credit Score
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                                        Risk Score
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                                        Total Borrowed
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                                        Total Repaid
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-montserrat-semibold">
-                                        Member Type
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {filteredUsers.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <Link to={`/user?id=${user.id}`} className="block">
-                                                <div className="flex items-center">
-                                                    <div className="flex-shrink-0 h-10 w-10">
-                                                        <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                                                            {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                                                        </div>
-                                                    </div>
-                                                    <div className="ml-4">
-                                                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                                                        <div className="text-sm text-gray-500">{user.email}</div>
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
-                                                user.role === 'MANAGER' ? 'bg-yellow-100 text-yellow-800' :
-                                                    'bg-green-100 text-green-800'
-                                                }`}>
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {user.accountNumber}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <span className="text-sm font-medium text-gray-900">{user.creditScore || 'N/A'}</span>
-                                                {user.creditScore && (
-                                                    <span className={`ml-2 text-xs ${(user.creditScore || 0) >= 750 ? 'text-green-600' :
-                                                        (user.creditScore || 0) >= 700 ? 'text-yellow-600' : 'text-red-600'
-                                                        }`}>
-                                                        {(user.creditScore || 0) >= 750 ? 'EXCELLENT' :
-                                                            (user.creditScore || 0) >= 700 ? 'GOOD' : 'FAIR'}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {user.internalRiskScore?.toFixed(2) || 'N/A'} / {user.maxRiskScore?.toFixed(2) || '18.0'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {formatCurrency(user.totalBorrowed)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {formatCurrency(user.totalRepaid)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.memberType === 'ELITE' ? 'bg-purple-100 text-purple-800' :
-                                                user.memberType === 'PREMIUM' ? 'bg-blue-100 text-blue-800' :
-                                                    'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                {user.memberType || 'REGULAR'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <DataTable
+                    data={filteredUsers}
+                    columns={columns}
+                    isLoading={isLoading}
+                    emptyMessage="No users found"
+                    emptyDescription={searchQuery ? 'Try adjusting your search criteria.' : 'Get started by creating a new user.'}
+                    keyExtractor={(user) => user.id}
+                    onRowClick={(user) => {
+                        // Optionally handle row click
+                        window.location.href = `/user?id=${user.id}`;
+                    }}
+                />
             )}
 
             {/* Add User Modal */}

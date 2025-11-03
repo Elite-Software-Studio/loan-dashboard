@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { trpc } from "../lib/trpc-client";
 import { useAuth } from "../lib/auth";
 import { useLocation, Link } from "react-router";
 import { NAVIGATION_ITEMS } from "../lib/constants";

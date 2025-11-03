@@ -131,7 +131,7 @@ export function capitalize(str: string): string {
  * Convert enum-like object to array of values
  */
 export function enumToArray<T extends Record<string, string | number>>(enumObject: T): Array<T[keyof T]> {
-	return Object.values(enumObject);
+	return Object.values(enumObject) as Array<T[keyof T]>;
 }
 
 /**

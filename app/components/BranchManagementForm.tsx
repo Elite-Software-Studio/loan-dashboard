@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { trpc } from '../lib/trpc-client';
+import { useState, useEffect } from 'react';
 
 export function BranchManagementForm() {
     const [activeTab, setActiveTab] = useState<'company' | 'branch'>('company');
@@ -71,46 +70,62 @@ export function BranchManagementForm() {
     // Branch form state
     const [branchForm, setBranchForm] = useState(getDefaultBranchForm());
 
-    // tRPC hooks
-    const { data: companies, refetch: refetchCompanies } = trpc.getCompanies.useQuery();
-    const createCompany = trpc.createCompany.useMutation({
-        onSuccess: () => {
-            setSuccessMessage('Company created successfully!');
-            setShowSuccess(true);
-            setCompanyForm(getDefaultCompanyForm());
-            refetchCompanies();
-            setTimeout(() => setShowSuccess(false), 3000);
-        },
-        onError: (error) => {
-            setSuccessMessage(`Error: ${error.message}`);
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 5000);
-        },
-    });
+    // State for companies and loading
+    const [companies, setCompanies] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmittingCompany, setIsSubmittingCompany] = useState(false);
+    const [isSubmittingBranch, setIsSubmittingBranch] = useState(false);
 
-    const createBranch = trpc.createBranch.useMutation({
-        onSuccess: () => {
-            setSuccessMessage('Branch created successfully!');
-            setShowSuccess(true);
-            setBranchForm(getDefaultBranchForm());
-            setTimeout(() => setShowSuccess(false), 3000);
-        },
-        onError: (error) => {
-            setSuccessMessage(`Error: ${error.message}`);
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 5000);
-        },
-    });
+    useEffect(() => {
+        const fetchCompanies = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetch('/api/companies');
+                if (response.ok) {
+                    const data = await response.json();
+                    setCompanies(data);
+                }
+            } catch (err) {
+                console.error('Error fetching companies:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchCompanies();
+    }, []);
 
-    const handleCompanySubmit = (e: React.FormEvent) => {
+    const handleCompanySubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        createCompany.mutate({
-            ...companyForm,
-            website: companyForm.website || undefined,
-        });
+        setIsSubmittingCompany(true);
+        try {
+            const response = await fetch('/api/companies', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'create', ...companyForm }),
+            });
+            if (response.ok) {
+                setSuccessMessage('Company created successfully!');
+                setShowSuccess(true);
+                setCompanyForm(getDefaultCompanyForm());
+                const data = await response.json();
+                setCompanies(prev => [data, ...prev]);
+                setTimeout(() => setShowSuccess(false), 3000);
+            } else {
+                const error = await response.json();
+                setSuccessMessage(`Error: ${error.error || 'Failed to create company'}`);
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 5000);
+            }
+        } catch (error: any) {
+            setSuccessMessage(`Error: ${error.message}`);
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 5000);
+        } finally {
+            setIsSubmittingCompany(false);
+        }
     };
 
-    const handleBranchSubmit = (e: React.FormEvent) => {
+    const handleBranchSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!branchForm.companyId) {
             setSuccessMessage('Please select a company');
@@ -118,10 +133,31 @@ export function BranchManagementForm() {
             setTimeout(() => setShowSuccess(false), 3000);
             return;
         }
-        createBranch.mutate({
-            ...branchForm,
-            email: branchForm.email || undefined,
-        });
+        setIsSubmittingBranch(true);
+        try {
+            const response = await fetch('/api/branches', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'create', ...branchForm }),
+            });
+            if (response.ok) {
+                setSuccessMessage('Branch created successfully!');
+                setShowSuccess(true);
+                setBranchForm(getDefaultBranchForm());
+                setTimeout(() => setShowSuccess(false), 3000);
+            } else {
+                const error = await response.json();
+                setSuccessMessage(`Error: ${error.error || 'Failed to create branch'}`);
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 5000);
+            }
+        } catch (error: any) {
+            setSuccessMessage(`Error: ${error.message}`);
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 5000);
+        } finally {
+            setIsSubmittingBranch(false);
+        }
     };
 
     return (
@@ -321,10 +357,10 @@ export function BranchManagementForm() {
                         <div className="flex justify-end pt-4">
                             <button
                                 type="submit"
-                                disabled={createCompany.isPending}
+                                disabled={isSubmittingCompany}
                                 className="bg-green-600 text-white px-6 py-3 rounded-xl font-montserrat-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
-                                {createCompany.isPending ? 'Creating...' : 'Create Company'}
+                                {isSubmittingCompany ? 'Creating...' : 'Create Company'}
                             </button>
                         </div>
                     </form>
@@ -475,10 +511,10 @@ export function BranchManagementForm() {
                         <div className="flex justify-end pt-4">
                             <button
                                 type="submit"
-                                disabled={createBranch.isPending || !companies || companies.length === 0}
+                                disabled={isSubmittingBranch || !companies || companies.length === 0}
                                 className="bg-green-600 text-white px-6 py-3 rounded-xl font-montserrat-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
-                                {createBranch.isPending ? 'Creating...' : 'Create Branch'}
+                                {isSubmittingBranch ? 'Creating...' : 'Create Branch'}
                             </button>
                         </div>
                     </form>
