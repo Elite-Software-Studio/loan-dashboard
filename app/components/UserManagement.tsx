@@ -113,10 +113,21 @@ export function UserManagement() {
             setIsLoading(true);
             try {
                 const response = await fetch('/api/users');
+
+                // Check if response is JSON before parsing
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+                }
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+
                 const data = await response.json();
+                console.log('Users API response:', data);
+
                 // Map API response to User interface
                 const mappedUsers: User[] = data.map((user: any) => ({
                     id: user.id,
@@ -133,6 +144,8 @@ export function UserManagement() {
                     memberType: user.memberType || 'REGULAR',
                     loans: user.loans || [],
                 }));
+
+                console.log('Mapped users:', mappedUsers);
                 setUsers(mappedUsers);
                 setError(null);
             } catch (err) {
@@ -298,11 +311,10 @@ export function UserManagement() {
             key: 'role',
             header: 'Role',
             render: (_, user) => (
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
-                    user.role === 'MANAGER' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                }`}>
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                        user.role === 'MANAGER' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-green-100 text-green-800'
+                    }`}>
                     {user.role}
                 </span>
             ),
@@ -319,10 +331,9 @@ export function UserManagement() {
                 <div className="flex items-center">
                     <span className="text-sm font-medium text-gray-900">{user.creditScore || 'N/A'}</span>
                     {user.creditScore && (
-                        <span className={`ml-2 text-xs ${
-                            (user.creditScore || 0) >= 750 ? 'text-green-600' :
-                            (user.creditScore || 0) >= 700 ? 'text-yellow-600' : 'text-red-600'
-                        }`}>
+                        <span className={`ml-2 text-xs ${(user.creditScore || 0) >= 750 ? 'text-green-600' :
+                                (user.creditScore || 0) >= 700 ? 'text-yellow-600' : 'text-red-600'
+                            }`}>
                             {(user.creditScore || 0) >= 750 ? 'EXCELLENT' :
                                 (user.creditScore || 0) >= 700 ? 'GOOD' : 'FAIR'}
                         </span>
@@ -361,11 +372,10 @@ export function UserManagement() {
             key: 'memberType',
             header: 'Member Type',
             render: (_, user) => (
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    user.memberType === 'ELITE' ? 'bg-purple-100 text-purple-800' :
-                    user.memberType === 'PREMIUM' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
-                }`}>
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.memberType === 'ELITE' ? 'bg-purple-100 text-purple-800' :
+                        user.memberType === 'PREMIUM' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
+                    }`}>
                     {user.memberType || 'REGULAR'}
                 </span>
             ),
@@ -378,6 +388,28 @@ export function UserManagement() {
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
                     <p className="text-gray-600 font-montserrat-regular">Loading users...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+                <div className="flex items-center space-x-3">
+                    <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <h3 className="text-lg font-semibold text-red-800 font-montserrat-semibold">Error Loading Users</h3>
+                        <p className="text-sm text-red-600 font-montserrat-regular mt-1">{error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-montserrat-medium"
+                        >
+                            Retry
+                        </button>
+                    </div>
                 </div>
             </div>
         );

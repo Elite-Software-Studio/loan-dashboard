@@ -109,9 +109,6 @@ export async function action({ request }: { request: Request }) {
 	}
 }
 
-// Resource route - loader/action handle all requests
-// Minimal component export for React Router to recognize this as a resource route
-export default function BranchesResource() {
-	return null;
-}
+// Resource route - no default export needed
+// React Router v7 recognizes this as a resource route when only loader/action are exported
 

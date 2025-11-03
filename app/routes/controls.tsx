@@ -22,9 +22,9 @@ export default function Controls() {
 
   return (
     <ProloansLayout>
-      <div className="px-6 py-8">
+      <div className="px-1 py-1">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-1">
           <h1 className="text-3xl font-bold text-gray-900 font-montserrat-bold mb-2">
             System Controls
           </h1>

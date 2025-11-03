@@ -1,6 +1,19 @@
 import { prisma } from "../lib/prisma";
 
-export async function loader() {
+export async function loader({ request }: { request: Request }) {
+	// Handle OPTIONS preflight
+	if (request.method === "OPTIONS") {
+		return new Response(null, {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+				"Access-Control-Allow-Headers": "Content-Type",
+			},
+		});
+	}
+
 	try {
 		const users = await prisma.user.findMany({
 			include: {
@@ -11,7 +24,8 @@ export async function loader() {
 			},
 		});
 
-		return new Response(JSON.stringify(users), {
+		// Use Response.json() to ensure proper JSON formatting
+		return Response.json(users, {
 			headers: {
 				"Content-Type": "application/json",
 				"Access-Control-Allow-Origin": "*",
@@ -21,7 +35,7 @@ export async function loader() {
 		});
 	} catch (error) {
 		console.error("Users API Error:", error);
-		return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+		return Response.json({ error: "Internal Server Error" }, {
 			status: 500,
 			headers: {
 				"Content-Type": "application/json",
@@ -30,8 +44,5 @@ export async function loader() {
 	}
 }
 
-// Resource route - loader handles all requests
-// Minimal component export for React Router to recognize this as a resource route
-export default function UsersResource() {
-	return null;
-}
+// Resource route - no default export needed
+// React Router v7 recognizes this as a resource route when only loader/action are exported

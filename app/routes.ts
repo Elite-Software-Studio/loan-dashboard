@@ -9,7 +9,7 @@ export default [
   route("reporting", "routes/reporting.tsx"),
   route("controls", "routes/controls.tsx"),
   route("companies", "routes/companies.tsx"),
-  route("api/users", "api/users.ts", { index: true }),
-  route("api/companies", "api/companies.ts", { index: true }),
-  route("api/branches", "api/branches.ts", { index: true })
+  route("api/users", "api/users.ts"),
+  route("api/companies", "api/companies.ts"),
+  route("api/branches", "api/branches.ts")
 ] satisfies RouteConfig;
