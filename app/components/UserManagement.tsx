@@ -312,8 +312,8 @@ export function UserManagement() {
             header: 'Role',
             render: (_, user) => (
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
-                        user.role === 'MANAGER' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
+                    user.role === 'MANAGER' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-green-100 text-green-800'
                     }`}>
                     {user.role}
                 </span>
@@ -332,7 +332,7 @@ export function UserManagement() {
                     <span className="text-sm font-medium text-gray-900">{user.creditScore || 'N/A'}</span>
                     {user.creditScore && (
                         <span className={`ml-2 text-xs ${(user.creditScore || 0) >= 750 ? 'text-green-600' :
-                                (user.creditScore || 0) >= 700 ? 'text-yellow-600' : 'text-red-600'
+                            (user.creditScore || 0) >= 700 ? 'text-yellow-600' : 'text-red-600'
                             }`}>
                             {(user.creditScore || 0) >= 750 ? 'EXCELLENT' :
                                 (user.creditScore || 0) >= 700 ? 'GOOD' : 'FAIR'}
@@ -373,8 +373,8 @@ export function UserManagement() {
             header: 'Member Type',
             render: (_, user) => (
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.memberType === 'ELITE' ? 'bg-purple-100 text-purple-800' :
-                        user.memberType === 'PREMIUM' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
+                    user.memberType === 'PREMIUM' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
                     }`}>
                     {user.memberType || 'REGULAR'}
                 </span>
