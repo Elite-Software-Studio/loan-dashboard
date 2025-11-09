@@ -34,7 +34,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
 
             {/* Fixed Sidebar */}
             <div className={`${sidebarOpen ? 'w-64 translate-x-0' : 'w-16 -translate-x-full lg:translate-x-0'} fixed top-16 left-0 bottom-0 z-30 bg-white shadow-sm border-r border-gray-200 transition-all duration-700 ease-in-out overflow-hidden transform lg:transform-none ${sidebarOpen ? 'animate-in slide-in-from-left duration-500' : ''} ${!sidebarOpen && 'lg:shadow-lg'}`}>
-                <div className="pt-8">
+                <div className="pt-12">
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
                         className="w-full flex items-center justify-center 
@@ -48,12 +48,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                             Collapse
                         </span>
                     </button>
-                    {!sidebarOpen && (
-                        <div className="mt-2 text-center">
-                            <div className="w-1 h-1 bg-gray-300 rounded-full mx-auto animate-pulse transition-all duration-300"></div>
-                            <div className="mt-1 text-xs text-gray-400 font-montserrat-medium opacity-0 animate-pulse">...</div>
-                        </div>
-                    )}
+
                 </div>
 
                 <nav className="mt-4">
