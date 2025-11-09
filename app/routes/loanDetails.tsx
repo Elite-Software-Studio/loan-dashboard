@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useSearchParams, useNavigate } from 'react-router';
 import { ProloansLayout } from '../components/ProloansLayout';
+import { AddPaymentModal } from '../components/AddPaymentModal';
+import { AlertModal } from '../components/AlertModal';
 
 interface Loan {
   id: string;
@@ -124,8 +126,12 @@ export function meta() {
 
 export default function LoanDetails() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [loan, setLoan] = useState<Loan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const loanId = searchParams.get('id');
@@ -432,13 +438,16 @@ export default function LoanDetails() {
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
               <h2 className="text-xl font-bold text-gray-900 font-montserrat-bold mb-4">Quick Actions</h2>
               <div className="space-y-3">
-                <Link
-                  to={`/payments?loanId=${loan.id}`}
+                <button
+                  onClick={() => setShowAddPaymentModal(true)}
                   className="block w-full px-4 py-3 bg-green-600 text-white text-center rounded-lg hover:bg-green-700 transition-colors font-montserrat-medium"
                 >
                   Record Payment
-                </Link>
-                <button className="block w-full px-4 py-3 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors font-montserrat-medium">
+                </button>
+                <button
+                  onClick={() => navigate(`/loan/payments?id=${loan.id}`)}
+                  className="block w-full px-4 py-3 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors font-montserrat-medium"
+                >
                   View Payment History
                 </button>
                 <button className="block w-full px-4 py-3 bg-gray-600 text-white text-center rounded-lg hover:bg-gray-700 transition-colors font-montserrat-medium">
@@ -448,6 +457,46 @@ export default function LoanDetails() {
             </div>
           </div>
         </div>
+
+        {/* Add Payment Modal */}
+        <AddPaymentModal
+          isOpen={showAddPaymentModal}
+          onClose={() => setShowAddPaymentModal(false)}
+          onSubmit={(payment) => {
+            console.log('Payment recorded:', payment);
+            setShowAddPaymentModal(false);
+            setSuccessMessage(
+              `Payment of ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(payment.amount)} has been successfully recorded for loan ${loan.id}.`
+            );
+            setShowSuccessAlert(true);
+            // TODO: Update loan remaining balance and refresh data
+            // Optionally refresh the page or update loan state after alert is closed
+          }}
+          loans={[{
+            id: loan.id,
+            borrowerName: loan.borrowerName,
+            borrowerEmail: loan.borrowerEmail,
+            loanAmount: loan.loanAmount,
+            remainingBalance: loan.remainingBalance,
+            monthlyPayment: loan.monthlyPayment,
+            nextDueDate: loan.nextDueDate,
+            status: loan.status
+          }]}
+        />
+
+        {/* Success Alert Modal */}
+        <AlertModal
+          isOpen={showSuccessAlert}
+          onClose={() => {
+            setShowSuccessAlert(false);
+            // Refresh the page to show updated loan balance
+            window.location.reload();
+          }}
+          type="success"
+          title="Payment Recorded Successfully!"
+          message={successMessage}
+          confirmLabel="OK"
+        />
       </div>
     </ProloansLayout>
   );

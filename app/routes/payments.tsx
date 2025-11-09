@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { ProloansLayout } from '../components/ProloansLayout';
 import { DataTable, type Column } from '../components/DataTable';
 import { AddPaymentModal } from '../components/AddPaymentModal';
+import { AlertModal } from '../components/AlertModal';
 
 export function meta() {
   return [
@@ -16,6 +17,8 @@ export default function Payments() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Mock data for loans (to populate the loan selector)
   const loansData = [
@@ -343,6 +346,12 @@ export default function Payments() {
     notes?: string;
   }) => {
     setPaymentsData(prev => [newPayment, ...prev]);
+    setShowAddPaymentModal(false);
+    const formattedAmount = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(newPayment.amount);
+    setSuccessMessage(
+      `Payment of ${formattedAmount} has been successfully recorded for loan ${newPayment.loanNumber} (${newPayment.borrowerName}). Transaction ID: ${newPayment.transactionId}`
+    );
+    setShowSuccessAlert(true);
   };
 
   return (
@@ -528,6 +537,16 @@ export default function Payments() {
           onClose={() => setShowAddPaymentModal(false)}
           onSubmit={handlePaymentSubmit}
           loans={loansData}
+        />
+
+        {/* Success Alert Modal */}
+        <AlertModal
+          isOpen={showSuccessAlert}
+          onClose={() => setShowSuccessAlert(false)}
+          type="success"
+          title="Payment Recorded Successfully!"
+          message={successMessage}
+          confirmLabel="OK"
         />
       </div>
     </ProloansLayout>
