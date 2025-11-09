@@ -3,6 +3,8 @@ import { Link, useSearchParams, useNavigate } from 'react-router';
 import { ProloansLayout } from '../components/ProloansLayout';
 import { AddPaymentModal } from '../components/AddPaymentModal';
 import { AlertModal } from '../components/AlertModal';
+import { ModalForm } from '../components/ModalForm';
+import { FormField, FormInput, FormSelect, FormTextarea, FormCurrencyInput, FormGrid, FormSection } from '../components/FormField';
 
 interface Loan {
   id: string;
@@ -132,6 +134,22 @@ export default function LoanDetails() {
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [alertType, setAlertType] = useState<'success' | 'error'>('success');
+  const [showEditLoanModal, setShowEditLoanModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editLoanForm, setEditLoanForm] = useState({
+    loanAmount: '',
+    interestRate: '',
+    term: '',
+    startDate: '',
+    loanType: '',
+    riskScore: '',
+    maxRiskScore: '',
+    collateral: '',
+    notes: '',
+    status: ''
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const loanId = searchParams.get('id');
@@ -140,6 +158,24 @@ export default function LoanDetails() {
     }
     setIsLoading(false);
   }, [searchParams]);
+
+  // Initialize edit form when loan is loaded or edit modal opens
+  useEffect(() => {
+    if (loan && showEditLoanModal) {
+      setEditLoanForm({
+        loanAmount: loan.loanAmount.toString(),
+        interestRate: loan.interestRate.toString(),
+        term: loan.term.toString(),
+        startDate: loan.startDate,
+        loanType: loan.loanType,
+        riskScore: loan.riskScore.toString(),
+        maxRiskScore: loan.maxRiskScore.toString(),
+        collateral: loan.collateral,
+        notes: loan.notes,
+        status: loan.status
+      });
+    }
+  }, [loan, showEditLoanModal]);
 
   if (isLoading) {
     return (
@@ -218,6 +254,117 @@ export default function LoanDetails() {
 
   const progressPercentage = ((loan.loanAmount - loan.remainingBalance) / loan.loanAmount) * 100;
   const monthsRemaining = loan.status === 'PAID_OFF' ? 0 : Math.ceil((loan.remainingBalance / loan.monthlyPayment) || 0);
+
+  const handleInputChange = (field: keyof typeof editLoanForm, value: string) => {
+    setEditLoanForm(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!editLoanForm.loanAmount.trim()) {
+      errors.loanAmount = 'Loan amount is required';
+    } else {
+      const amount = parseFloat(editLoanForm.loanAmount);
+      if (isNaN(amount) || amount <= 0) {
+        errors.loanAmount = 'Loan amount must be greater than 0';
+      }
+    }
+
+    if (!editLoanForm.interestRate.trim()) {
+      errors.interestRate = 'Interest rate is required';
+    } else {
+      const rate = parseFloat(editLoanForm.interestRate);
+      if (isNaN(rate) || rate < 0 || rate > 100) {
+        errors.interestRate = 'Interest rate must be between 0 and 100';
+      }
+    }
+
+    if (!editLoanForm.term.trim()) {
+      errors.term = 'Loan term is required';
+    } else {
+      const term = parseInt(editLoanForm.term);
+      if (isNaN(term) || term <= 0) {
+        errors.term = 'Loan term must be greater than 0';
+      }
+    }
+
+    if (!editLoanForm.startDate.trim()) {
+      errors.startDate = 'Start date is required';
+    }
+
+    if (!editLoanForm.loanType) {
+      errors.loanType = 'Loan type is required';
+    }
+
+    if (editLoanForm.riskScore) {
+      const score = parseFloat(editLoanForm.riskScore);
+      if (isNaN(score) || score < 0 || score > 18) {
+        errors.riskScore = 'Risk score must be between 0 and 18';
+      }
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleEditLoanSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm() || !loan) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Calculate new monthly payment
+      const principal = parseFloat(editLoanForm.loanAmount);
+      const rate = parseFloat(editLoanForm.interestRate) / 100 / 12;
+      const term = parseInt(editLoanForm.term);
+      const monthlyPayment = (principal * rate * Math.pow(1 + rate, term)) / (Math.pow(1 + rate, term) - 1);
+
+      // Update loan in mock data (in production, this would be an API call)
+      const updatedLoan: Loan = {
+        ...loan,
+        loanAmount: principal,
+        interestRate: parseFloat(editLoanForm.interestRate),
+        term: term,
+        startDate: editLoanForm.startDate,
+        loanType: editLoanForm.loanType as Loan['loanType'],
+        riskScore: editLoanForm.riskScore ? parseFloat(editLoanForm.riskScore) : loan.riskScore,
+        maxRiskScore: parseFloat(editLoanForm.maxRiskScore),
+        collateral: editLoanForm.collateral.trim(),
+        notes: editLoanForm.notes.trim(),
+        status: editLoanForm.status as Loan['status'],
+        monthlyPayment: Math.round(monthlyPayment * 100) / 100,
+        // Note: remainingBalance would typically be recalculated based on payments
+      };
+
+      // Update mock data
+      if (loan.id && mockLoans[loan.id]) {
+        mockLoans[loan.id] = updatedLoan;
+      }
+
+      setLoan(updatedLoan);
+      setShowEditLoanModal(false);
+      setSuccessMessage(`Loan ${loan.id} has been successfully updated.`);
+      setAlertType('success');
+      setShowSuccessAlert(true);
+    } catch (error) {
+      console.error('Error updating loan:', error);
+      setShowEditLoanModal(false);
+      setSuccessMessage('Failed to update loan. Please try again.');
+      setAlertType('error');
+      setShowSuccessAlert(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <ProloansLayout>
@@ -450,7 +597,10 @@ export default function LoanDetails() {
                 >
                   View Payment History
                 </button>
-                <button className="block w-full px-4 py-3 bg-gray-600 text-white text-center rounded-lg hover:bg-gray-700 transition-colors font-montserrat-medium">
+                <button
+                  onClick={() => setShowEditLoanModal(true)}
+                  className="block w-full px-4 py-3 bg-gray-600 text-white text-center rounded-lg hover:bg-gray-700 transition-colors font-montserrat-medium"
+                >
                   Edit Loan
                 </button>
               </div>
@@ -484,16 +634,175 @@ export default function LoanDetails() {
           }]}
         />
 
-        {/* Success Alert Modal */}
+        {/* Edit Loan Modal */}
+        <ModalForm
+          isOpen={showEditLoanModal}
+          onClose={() => setShowEditLoanModal(false)}
+          onSubmit={handleEditLoanSubmit}
+          title="Edit Loan"
+          description="Update loan information"
+          submitLabel="Update Loan"
+          isLoading={isSubmitting}
+          maxWidth="4xl"
+        >
+          <div className="space-y-6">
+            {/* Loan Details */}
+            <FormSection title="Loan Details">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <FormField label="Loan Amount" required error={formErrors.loanAmount}>
+                  <FormCurrencyInput
+                    value={editLoanForm.loanAmount}
+                    onChange={(e) => handleInputChange('loanAmount', e.target.value)}
+                    placeholder="0.00"
+                    error={!!formErrors.loanAmount}
+                  />
+                </FormField>
+
+                <FormField label="Interest Rate (%)" required error={formErrors.interestRate}>
+                  <FormInput
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={editLoanForm.interestRate}
+                    onChange={(e) => handleInputChange('interestRate', e.target.value)}
+                    placeholder="0.00"
+                    error={!!formErrors.interestRate}
+                  />
+                </FormField>
+
+                <FormField label="Term (months)" required error={formErrors.term}>
+                  <FormInput
+                    type="number"
+                    min="1"
+                    value={editLoanForm.term}
+                    onChange={(e) => handleInputChange('term', e.target.value)}
+                    placeholder="12"
+                    error={!!formErrors.term}
+                  />
+                </FormField>
+              </div>
+            </FormSection>
+
+            {/* Additional Details */}
+            <FormSection title="Additional Details">
+              <FormGrid>
+                <FormField label="Start Date" required error={formErrors.startDate}>
+                  <FormInput
+                    type="date"
+                    value={editLoanForm.startDate}
+                    onChange={(e) => handleInputChange('startDate', e.target.value)}
+                    error={!!formErrors.startDate}
+                  />
+                </FormField>
+
+                <FormField label="Loan Type" required error={formErrors.loanType}>
+                  <FormSelect
+                    value={editLoanForm.loanType}
+                    onChange={(e) => handleInputChange('loanType', e.target.value)}
+                    error={!!formErrors.loanType}
+                  >
+                    <option value="">Select loan type</option>
+                    <option value="PERSONAL">👤 Personal Loan</option>
+                    <option value="BUSINESS">💼 Business Loan</option>
+                    <option value="MORTGAGE">🏠 Mortgage</option>
+                    <option value="AUTO">🚗 Auto Loan</option>
+                    <option value="STUDENT">🎓 Student Loan</option>
+                  </FormSelect>
+                </FormField>
+              </FormGrid>
+            </FormSection>
+
+            {/* Status */}
+            <FormSection title="Loan Status">
+              <FormGrid>
+                <FormField label="Status" required>
+                  <FormSelect
+                    value={editLoanForm.status}
+                    onChange={(e) => handleInputChange('status', e.target.value)}
+                  >
+                    <option value="PENDING">Pending</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="PAID_OFF">Paid Off</option>
+                    <option value="DEFAULTED">Defaulted</option>
+                    <option value="REJECTED">Rejected</option>
+                  </FormSelect>
+                </FormField>
+              </FormGrid>
+            </FormSection>
+
+            {/* Risk Assessment */}
+            <FormSection title="Risk Assessment">
+              <FormGrid>
+                <FormField label="Risk Score" error={formErrors.riskScore}>
+                  <FormInput
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="18"
+                    value={editLoanForm.riskScore}
+                    onChange={(e) => handleInputChange('riskScore', e.target.value)}
+                    placeholder="0.0-18.0"
+                    error={!!formErrors.riskScore}
+                  />
+                </FormField>
+
+                <FormField label="Max Risk Score">
+                  <FormInput
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="18"
+                    value={editLoanForm.maxRiskScore}
+                    onChange={(e) => handleInputChange('maxRiskScore', e.target.value)}
+                    placeholder="18.0"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
+
+            {/* Collateral and Notes */}
+            <FormSection title="Additional Information">
+              <FormGrid>
+                <FormField label="Collateral">
+                  <FormInput
+                    type="text"
+                    value={editLoanForm.collateral}
+                    onChange={(e) => handleInputChange('collateral', e.target.value)}
+                    placeholder="Describe collateral if any"
+                  />
+                </FormField>
+
+                <FormField label="Notes">
+                  <FormTextarea
+                    value={editLoanForm.notes}
+                    onChange={(e) => handleInputChange('notes', e.target.value)}
+                    rows={3}
+                    placeholder="Add any additional notes about this loan..."
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
+          </div>
+        </ModalForm>
+
+        {/* Success/Error Alert Modal */}
         <AlertModal
           isOpen={showSuccessAlert}
           onClose={() => {
             setShowSuccessAlert(false);
-            // Refresh the page to show updated loan balance
-            window.location.reload();
+            // Only reload if it was a payment, not a loan update
+            if (successMessage.includes('Payment')) {
+              window.location.reload();
+            }
           }}
-          type="success"
-          title="Payment Recorded Successfully!"
+          type={alertType}
+          title={
+            alertType === 'success'
+              ? (successMessage.includes('Payment') ? "Payment Recorded Successfully!" : "Loan Updated Successfully!")
+              : "Error"
+          }
           message={successMessage}
           confirmLabel="OK"
         />
