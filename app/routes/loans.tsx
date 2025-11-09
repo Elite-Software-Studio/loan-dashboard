@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router';
 import { ProloansLayout } from '../components/ProloansLayout';
 import { DataTable, type Column } from '../components/DataTable';
+import { ModalForm } from '../components/ModalForm';
+import { FormField, FormInput, FormSelect, FormTextarea, FormCurrencyInput, FormGrid, FormSection } from '../components/FormField';
 
 interface Loan {
   id: string;
@@ -678,329 +680,216 @@ export default function Loans() {
         />
 
         {/* Add Loan Modal */}
-        {showAddLoanModal && (
-          <div className="fixed inset-0 bg-white bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4 mt-40">
-            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-white/20">
-              {/* Modal Header - Fixed */}
-              <div className="px-8 py-6 border-b border-gray-200/50 bg-gradient-to-r from-gray-50/50 to-white/50 flex-shrink-0">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 font-montserrat-bold">Create New Loan</h2>
-                    <p className="mt-1 text-gray-600 font-montserrat-medium">Add a new loan application</p>
-                  </div>
-                  <button
-                    onClick={() => setShowAddLoanModal(false)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-full"
+        <ModalForm
+          isOpen={showAddLoanModal}
+          onClose={() => {
+            setShowAddLoanModal(false);
+            handleResetForm();
+          }}
+          onSubmit={handleSubmitLoan}
+          title="Create New Loan"
+          description="Add a new loan application"
+          submitLabel="Create Loan"
+          isLoading={isSubmitting}
+          maxWidth="4xl"
+        >
+          <div className="space-y-6">
+            {/* User Selection */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+              <h3 className="text-lg font-semibold text-gray-900 font-montserrat-semibold mb-4">Select User</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {mockUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    onClick={() => handleUserSelection(user.id)}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 ${addLoanForm.selectedUserId === user.id
+                      ? 'border-green-500 bg-green-50 shadow-md'
+                      : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
+                      }`}
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-3 h-3 rounded-full ${addLoanForm.selectedUserId === user.id ? 'bg-green-500' : 'bg-gray-300'
+                        }`} />
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900 font-montserrat-semibold">{user.name}</div>
+                        <div className="text-sm text-gray-600 font-montserrat-medium">{user.email}</div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                            {user.memberType}
+                          </span>
+                          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                            {user.creditScore}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
+              {formErrors.selectedUserId && (
+                <p className="mt-2 text-sm text-red-600 font-montserrat-medium">{formErrors.selectedUserId}</p>
+              )}
+            </div>
 
-              {/* Modal Body - Scrollable */}
-              <div className="flex-1 overflow-y-auto">
-                <div className="p-8">
-                  <form onSubmit={handleSubmitLoan} className="space-y-6">
-                    {/* User Selection */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-                      <h3 className="text-lg font-semibold text-gray-900 font-montserrat-semibold mb-4">Select User</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {mockUsers.map((user) => (
-                          <div
-                            key={user.id}
-                            onClick={() => handleUserSelection(user.id)}
-                            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 ${addLoanForm.selectedUserId === user.id
-                              ? 'border-green-500 bg-green-50 shadow-md'
-                              : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
-                              }`}
-                          >
-                            <div className="flex items-center space-x-3">
-                              <div className={`w-3 h-3 rounded-full ${addLoanForm.selectedUserId === user.id ? 'bg-green-500' : 'bg-gray-300'
-                                }`} />
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900 font-montserrat-semibold">{user.name}</div>
-                                <div className="text-sm text-gray-600 font-montserrat-medium">{user.email}</div>
-                                <div className="flex items-center space-x-2 mt-1">
-                                  <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                                    {user.memberType}
-                                  </span>
-                                  <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
-                                    {user.creditScore}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      {formErrors.selectedUserId && (
-                        <p className="mt-2 text-sm text-red-600 font-montserrat-medium">{formErrors.selectedUserId}</p>
-                      )}
-                    </div>
-
-                    {/* Basic Information */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Borrower Name */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
-                          Borrower Name <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex space-x-2">
-                          <input
-                            type="text"
-                            value={addLoanForm.borrowerName}
-                            onChange={(e) => handleInputChange('borrowerName', e.target.value)}
-                            placeholder="Enter borrower's full name"
-                            disabled={!!addLoanForm.selectedUserId}
-                            className={`flex-1 px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.borrowerName ? 'border-red-500' : 'border-gray-300'
-                              } ${addLoanForm.selectedUserId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          />
-                          {addLoanForm.selectedUserId && (
-                            <button
-                              type="button"
-                              onClick={() => handleUserSelection('')}
-                              className="px-3 py-3 text-gray-600 bg-gray-100 border border-gray-300 rounded-xl hover:bg-gray-200 transition-colors duration-200 font-montserrat-medium"
-                            >
-                              Change User
-                            </button>
-                          )}
-                        </div>
-                        {formErrors.borrowerName && (
-                          <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.borrowerName}</p>
-                        )}
-                      </div>
-
-                      {/* Borrower Email */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
-                          Borrower Email <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="email"
-                          value={addLoanForm.borrowerEmail}
-                          onChange={(e) => handleInputChange('borrowerEmail', e.target.value)}
-                          placeholder="Enter borrower's email"
-                          disabled={!!addLoanForm.selectedUserId}
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.borrowerEmail ? 'border-red-500' : 'border-gray-300'
-                            } ${addLoanForm.selectedUserId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                        />
-                        {formErrors.borrowerEmail && (
-                          <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.borrowerEmail}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Loan Details */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {/* Loan Amount */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
-                          Loan Amount <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2 text-gray-500 font-montserrat-medium">$</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={addLoanForm.loanAmount}
-                            onChange={(e) => handleInputChange('loanAmount', e.target.value)}
-                            placeholder="0.00"
-                            className={`w-full pl-8 pr-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.loanAmount ? 'border-red-500' : 'border-gray-300'}`}
-                          />
-                        </div>
-                        {formErrors.loanAmount && (
-                          <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.loanAmount}</p>
-                        )}
-                      </div>
-
-                      {/* Interest Rate */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
-                          Interest Rate (%) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max="100"
-                          value={addLoanForm.interestRate}
-                          onChange={(e) => handleInputChange('interestRate', e.target.value)}
-                          placeholder="0.00"
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.interestRate ? 'border-red-500' : 'border-gray-300'}`}
-                        />
-                        {formErrors.interestRate && (
-                          <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.interestRate}</p>
-                        )}
-                      </div>
-
-                      {/* Loan Term */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
-                          Term (months) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={addLoanForm.term}
-                          onChange={(e) => handleInputChange('term', e.target.value)}
-                          placeholder="12"
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.term ? 'border-red-500' : 'border-gray-300'}`}
-                        />
-                        {formErrors.term && (
-                          <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.term}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Additional Details */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Start Date */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
-                          Start Date <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          value={addLoanForm.startDate}
-                          onChange={(e) => handleInputChange('startDate', e.target.value)}
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.startDate ? 'border-red-500' : 'border-gray-300'}`}
-                        />
-                        {formErrors.startDate && (
-                          <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.startDate}</p>
-                        )}
-                      </div>
-
-                      {/* Loan Type */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
-                          Loan Type <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          value={addLoanForm.loanType}
-                          onChange={(e) => handleInputChange('loanType', e.target.value)}
-                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
-                        >
-                          <option value="PERSONAL">👤 Personal Loan</option>
-                          <option value="BUSINESS">💼 Business Loan</option>
-                          <option value="MORTGAGE">🏠 Mortgage</option>
-                          <option value="AUTO">🚗 Auto Loan</option>
-                          <option value="STUDENT">🎓 Student Loan</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Risk Assessment */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Risk Score */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
-                          Risk Score
-                        </label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="18"
-                          value={addLoanForm.riskScore}
-                          onChange={(e) => handleInputChange('riskScore', e.target.value)}
-                          placeholder="0.0-18.0"
-                          className={`w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm ${formErrors.riskScore ? 'border-red-500' : 'border-gray-300'}`}
-                        />
-                        {formErrors.riskScore && (
-                          <p className="mt-1 text-sm text-red-600 font-montserrat-medium">{formErrors.riskScore}</p>
-                        )}
-                      </div>
-
-                      {/* Max Risk Score */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
-                          Max Risk Score
-                        </label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="18"
-                          value={addLoanForm.maxRiskScore}
-                          onChange={(e) => handleInputChange('maxRiskScore', e.target.value)}
-                          placeholder="18.0"
-                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Collateral and Notes */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Collateral */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
-                          Collateral
-                        </label>
-                        <input
-                          type="text"
-                          value={addLoanForm.collateral}
-                          onChange={(e) => handleInputChange('collateral', e.target.value)}
-                          placeholder="Describe collateral if any"
-                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
-                        />
-                      </div>
-
-                      {/* Notes */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 font-montserrat-medium mb-2">
-                          Notes
-                        </label>
-                        <textarea
-                          value={addLoanForm.notes}
-                          onChange={(e) => handleInputChange('notes', e.target.value)}
-                          rows={3}
-                          placeholder="Add any additional notes about this loan..."
-                          className="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm font-montserrat-medium text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/80 backdrop-blur-sm"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Form Actions */}
-                    <div className="flex items-center justify-end space-x-4 pt-6">
+            {/* Basic Information */}
+            <FormSection title="Basic Information">
+              <FormGrid>
+                <FormField label="Borrower Name" required error={formErrors.borrowerName}>
+                  <div className="flex space-x-2">
+                    <FormInput
+                      type="text"
+                      value={addLoanForm.borrowerName}
+                      onChange={(e) => handleInputChange('borrowerName', e.target.value)}
+                      placeholder="Enter borrower's full name"
+                      disabled={!!addLoanForm.selectedUserId}
+                      error={!!formErrors.borrowerName}
+                      className={addLoanForm.selectedUserId ? 'bg-gray-100 cursor-not-allowed' : ''}
+                    />
+                    {addLoanForm.selectedUserId && (
                       <button
                         type="button"
-                        onClick={handleResetForm}
-                        className="px-6 py-3 text-gray-700 bg-gray-100 border border-gray-300 rounded-xl hover:bg-gray-200 transition-all duration-200 font-montserrat-medium hover:scale-105"
+                        onClick={() => handleUserSelection('')}
+                        className="px-3 py-3 text-gray-600 bg-gray-100 border border-gray-300 rounded-xl hover:bg-gray-200 transition-colors duration-200 font-montserrat-medium whitespace-nowrap"
                       >
-                        Reset Form
+                        Change User
                       </button>
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-montserrat-medium flex items-center space-x-2 hover:scale-105 shadow-lg"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span>Creating Loan...</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span>Create Loan</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </form>
-                </div>
+                    )}
+                  </div>
+                </FormField>
+
+                <FormField label="Borrower Email" required error={formErrors.borrowerEmail}>
+                  <FormInput
+                    type="email"
+                    value={addLoanForm.borrowerEmail}
+                    onChange={(e) => handleInputChange('borrowerEmail', e.target.value)}
+                    placeholder="Enter borrower's email"
+                    disabled={!!addLoanForm.selectedUserId}
+                    error={!!formErrors.borrowerEmail}
+                    className={addLoanForm.selectedUserId ? 'bg-gray-100 cursor-not-allowed' : ''}
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
+
+            {/* Loan Details */}
+            <FormSection title="Loan Details">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <FormField label="Loan Amount" required error={formErrors.loanAmount}>
+                  <FormCurrencyInput
+                    value={addLoanForm.loanAmount}
+                    onChange={(e) => handleInputChange('loanAmount', e.target.value)}
+                    placeholder="0.00"
+                    error={!!formErrors.loanAmount}
+                  />
+                </FormField>
+
+                <FormField label="Interest Rate (%)" required error={formErrors.interestRate}>
+                  <FormInput
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={addLoanForm.interestRate}
+                    onChange={(e) => handleInputChange('interestRate', e.target.value)}
+                    placeholder="0.00"
+                    error={!!formErrors.interestRate}
+                  />
+                </FormField>
+
+                <FormField label="Term (months)" required error={formErrors.term}>
+                  <FormInput
+                    type="number"
+                    min="1"
+                    value={addLoanForm.term}
+                    onChange={(e) => handleInputChange('term', e.target.value)}
+                    placeholder="12"
+                    error={!!formErrors.term}
+                  />
+                </FormField>
               </div>
-            </div>
+            </FormSection>
+
+            {/* Additional Details */}
+            <FormSection title="Additional Details">
+              <FormGrid>
+                <FormField label="Start Date" required error={formErrors.startDate}>
+                  <FormInput
+                    type="date"
+                    value={addLoanForm.startDate}
+                    onChange={(e) => handleInputChange('startDate', e.target.value)}
+                    error={!!formErrors.startDate}
+                  />
+                </FormField>
+
+                <FormField label="Loan Type" required>
+                  <FormSelect
+                    value={addLoanForm.loanType}
+                    onChange={(e) => handleInputChange('loanType', e.target.value)}
+                  >
+                    <option value="PERSONAL">👤 Personal Loan</option>
+                    <option value="BUSINESS">💼 Business Loan</option>
+                    <option value="MORTGAGE">🏠 Mortgage</option>
+                    <option value="AUTO">🚗 Auto Loan</option>
+                    <option value="STUDENT">🎓 Student Loan</option>
+                  </FormSelect>
+                </FormField>
+              </FormGrid>
+            </FormSection>
+
+            {/* Risk Assessment */}
+            <FormSection title="Risk Assessment">
+              <FormGrid>
+                <FormField label="Risk Score" error={formErrors.riskScore}>
+                  <FormInput
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="18"
+                    value={addLoanForm.riskScore}
+                    onChange={(e) => handleInputChange('riskScore', e.target.value)}
+                    placeholder="0.0-18.0"
+                    error={!!formErrors.riskScore}
+                  />
+                </FormField>
+
+                <FormField label="Max Risk Score">
+                  <FormInput
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="18"
+                    value={addLoanForm.maxRiskScore}
+                    onChange={(e) => handleInputChange('maxRiskScore', e.target.value)}
+                    placeholder="18.0"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
+
+            {/* Collateral and Notes */}
+            <FormSection title="Additional Information">
+              <FormGrid>
+                <FormField label="Collateral">
+                  <FormInput
+                    type="text"
+                    value={addLoanForm.collateral}
+                    onChange={(e) => handleInputChange('collateral', e.target.value)}
+                    placeholder="Describe collateral if any"
+                  />
+                </FormField>
+
+                <FormField label="Notes">
+                  <FormTextarea
+                    value={addLoanForm.notes}
+                    onChange={(e) => handleInputChange('notes', e.target.value)}
+                    rows={3}
+                    placeholder="Add any additional notes about this loan..."
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
           </div>
-        )}
+        </ModalForm>
       </div>
     </ProloansLayout>
   );
