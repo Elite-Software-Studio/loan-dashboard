@@ -6,6 +6,7 @@ export default [
   route("user", "routes/userDetails.tsx"),
   route("payments", "routes/payments.tsx"),
   route("loans", "routes/loans.tsx"),
+  route("loan", "routes/loanDetails.tsx"),
   route("reporting", "routes/reporting.tsx"),
   route("controls", "routes/controls.tsx"),
   route("companies", "routes/companies.tsx"),

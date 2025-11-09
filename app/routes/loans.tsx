@@ -52,14 +52,14 @@ interface FormErrors {
   maxRiskScore: string;
 }
 
-// Mock user data for loan creation
-const mockUsers = [
-  { id: 'user-1', name: 'John Smith', email: 'john.smith@email.com', creditScore: 750, memberType: 'PREMIUM' },
-  { id: 'user-2', name: 'Sarah Johnson', email: 'sarah.j@email.com', creditScore: 820, memberType: 'ELITE' },
-  { id: 'user-3', name: 'Mike Chen', email: 'mike.chen@email.com', creditScore: 680, memberType: 'REGULAR' },
-  { id: 'user-4', name: 'Lisa Rodriguez', email: 'lisa.r@email.com', creditScore: 720, memberType: 'PREMIUM' },
-  { id: 'user-5', name: 'David Wilson', email: 'david.w@email.com', creditScore: 790, memberType: 'VIP' }
-];
+// User interface for loan creation
+interface UserForLoan {
+  id: string;
+  name: string;
+  email: string;
+  creditScore?: number;
+  memberType: string;
+}
 
 // Mock loan data
 const mockLoans: Loan[] = [
@@ -164,11 +164,14 @@ export function meta() {
 
 export default function Loans() {
   const [loans, setLoans] = useState<Loan[]>(mockLoans);
+  const [users, setUsers] = useState<UserForLoan[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [showAddLoanModal, setShowAddLoanModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
+  const [userSearchQuery, setUserSearchQuery] = useState('');
 
   const [addLoanForm, setAddLoanForm] = useState<AddLoanForm>({
     selectedUserId: '',
@@ -198,6 +201,48 @@ export default function Loans() {
     maxRiskScore: ''
   });
 
+  // Fetch users from API
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsLoadingUsers(true);
+      try {
+        const response = await fetch('/api/users');
+
+        // Check if response is JSON before parsing
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Map API response to UserForLoan interface
+        const mappedUsers: UserForLoan[] = data.map((user: any) => ({
+          id: user.id,
+          name: user.name || '',
+          email: user.email || '',
+          creditScore: user.creditScore ?? undefined,
+          memberType: user.memberType || 'REGULAR',
+        }));
+
+        setUsers(mappedUsers);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+        // Set empty array on error - users can still manually enter borrower info
+        setUsers([]);
+      } finally {
+        setIsLoadingUsers(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   const handleInputChange = (field: keyof AddLoanForm, value: string) => {
     setAddLoanForm(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
@@ -207,7 +252,7 @@ export default function Loans() {
   };
 
   const handleUserSelection = (userId: string) => {
-    const selectedUser = mockUsers.find(user => user.id === userId);
+    const selectedUser = users.find(user => user.id === userId);
     if (selectedUser) {
       setAddLoanForm(prev => ({
         ...prev,
@@ -224,6 +269,18 @@ export default function Loans() {
       }));
     }
   };
+
+  // Filter users based on search query
+  const filteredUsers = users.filter(user => {
+    if (!userSearchQuery.trim()) return false; // Don't show any users until user searches
+    const query = userSearchQuery.toLowerCase();
+    return (
+      user.name.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query) ||
+      user.memberType.toLowerCase().includes(query) ||
+      (user.creditScore && user.creditScore.toString().includes(query))
+    );
+  });
 
   const validateForm = (): boolean => {
     const errors: FormErrors = {
@@ -697,37 +754,92 @@ export default function Loans() {
             {/* User Selection */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
               <h3 className="text-lg font-semibold text-gray-900 font-montserrat-semibold mb-4">Select User</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {mockUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    onClick={() => handleUserSelection(user.id)}
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 ${addLoanForm.selectedUserId === user.id
-                      ? 'border-green-500 bg-green-50 shadow-md'
-                      : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
-                      }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-3 h-3 rounded-full ${addLoanForm.selectedUserId === user.id ? 'bg-green-500' : 'bg-gray-300'
-                        }`} />
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900 font-montserrat-semibold">{user.name}</div>
-                        <div className="text-sm text-gray-600 font-montserrat-medium">{user.email}</div>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                            {user.memberType}
-                          </span>
-                          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
-                            {user.creditScore}
-                          </span>
+
+              {/* User Search Input */}
+              <div className="mb-4">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    value={userSearchQuery}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
+                    placeholder="Search users by name, email, member type, or credit score..."
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-sm font-montserrat-medium text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
+                  />
+                </div>
+                {userSearchQuery && (
+                  <p className="mt-2 text-xs text-gray-500 font-montserrat-regular">
+                    {filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'} found
+                  </p>
+                )}
+              </div>
+
+              {isLoadingUsers ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+                    <p className="text-sm text-gray-600 font-montserrat-medium">Loading users...</p>
+                  </div>
+                </div>
+              ) : users.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-gray-600 font-montserrat-medium mb-2">No users found in the database.</p>
+                  <p className="text-xs text-gray-500 font-montserrat-regular">You can still create a loan by manually entering borrower information below.</p>
+                </div>
+              ) : !userSearchQuery.trim() ? (
+                <div className="text-center py-8">
+                  <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <p className="text-sm text-gray-600 font-montserrat-medium mb-2">Search for a user to select</p>
+                  <p className="text-xs text-gray-500 font-montserrat-regular">Enter a name, email, member type, or credit score above</p>
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-gray-600 font-montserrat-medium mb-2">No users found matching "{userSearchQuery}"</p>
+                  <p className="text-xs text-gray-500 font-montserrat-regular">Try a different search term or enter borrower information manually below</p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                    {filteredUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        onClick={() => handleUserSelection(user.id)}
+                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 ${addLoanForm.selectedUserId === user.id
+                          ? 'border-green-500 bg-green-50 shadow-md'
+                          : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
+                          }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-3 h-3 rounded-full ${addLoanForm.selectedUserId === user.id ? 'bg-green-500' : 'bg-gray-300'
+                            }`} />
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900 font-montserrat-semibold">{user.name}</div>
+                            <div className="text-sm text-gray-600 font-montserrat-medium">{user.email}</div>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                                {user.memberType}
+                              </span>
+                              {user.creditScore && (
+                                <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                                  {user.creditScore}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              {formErrors.selectedUserId && (
-                <p className="mt-2 text-sm text-red-600 font-montserrat-medium">{formErrors.selectedUserId}</p>
+                  {formErrors.selectedUserId && (
+                    <p className="mt-2 text-sm text-red-600 font-montserrat-medium">{formErrors.selectedUserId}</p>
+                  )}
+                </>
               )}
             </div>
 

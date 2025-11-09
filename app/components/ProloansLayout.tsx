@@ -3,6 +3,7 @@ import { useAuth } from "../lib/auth";
 import { useLocation, Link } from "react-router";
 import { NAVIGATION_ITEMS } from "../lib/constants";
 import { getUserInitials } from "../lib/utils";
+import { Sidebar } from "./Sidebar";
 
 /**
  * Main layout component for the Proloans application
@@ -11,13 +12,13 @@ import { getUserInitials } from "../lib/utils";
  * @param children - React node to render as main content
  */
 export function ProloansLayout({ children }: { children: React.ReactNode }) {
-	const [sidebarOpen, setSidebarOpen] = useState(true);
-	const [showUserMenu, setShowUserMenu] = useState(false);
-	const { user, logout } = useAuth();
-	const location = useLocation();
-	const userMenuRef = useRef<HTMLDivElement>(null);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const { user, logout } = useAuth();
+    const location = useLocation();
+    const userMenuRef = useRef<HTMLDivElement>(null);
 
-	const navigation = NAVIGATION_ITEMS;
+    const navigation = NAVIGATION_ITEMS;
 
     // Function to check if a navigation item is active
     const isActiveRoute = (href: string) => {
@@ -115,11 +116,11 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
                                     onClick={() => setShowUserMenu(!showUserMenu)}
                                     className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 hover:scale-105"
                                 >
-									<div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center transition-transform duration-200 hover:scale-110">
-										<span className="text-sm font-medium text-white">
-											{getUserInitials(user?.name || "User")}
-										</span>
-									</div>
+                                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center transition-transform duration-200 hover:scale-110">
+                                        <span className="text-sm font-medium text-white">
+                                            {getUserInitials(user?.name || "User")}
+                                        </span>
+                                    </div>
                                     <span className="text-sm font-medium text-gray-700 transition-colors duration-200">{user?.name || 'User'}</span>
                                     <svg className="h-4 w-4 text-gray-400 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -180,70 +181,8 @@ export function ProloansLayout({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex pt-16">
-                {/* Mobile Sidebar Overlay */}
-                {sidebarOpen && (
-                    <div
-                        className="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 lg:hidden animate-in fade-in duration-300"
-                        onClick={() => setSidebarOpen(false)}
-                    />
-                )}
-
                 {/* Fixed Sidebar */}
-                <div className={`${sidebarOpen ? 'w-64 translate-x-0' : 'w-16 -translate-x-full lg:translate-x-0'} fixed top-16 left-0 bottom-0 z-30 bg-white shadow-sm border-r border-gray-200 transition-all duration-700 ease-in-out overflow-hidden transform lg:transform-none ${sidebarOpen ? 'animate-in slide-in-from-left duration-500' : ''} ${!sidebarOpen && 'lg:shadow-lg'}`}>
-                    <div className="p-4">
-                        <button
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                            className="w-full flex items-center justify-center p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all duration-200 hover:scale-105 group"
-                            title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-                        >
-                            <svg className="h-5 w-5 transition-all duration-200 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
-                            </svg>
-                            <span className={`ml-2 text-xs text-gray-400 font-montserrat-medium transition-all duration-300 ${sidebarOpen ? 'opacity-100 w-auto' : 'opacity-0 w-0'} overflow-hidden whitespace-nowrap`}>
-                                Collapse
-                            </span>
-                        </button>
-                        {!sidebarOpen && (
-                            <div className="mt-2 text-center">
-                                <div className="w-1 h-1 bg-gray-300 rounded-full mx-auto animate-pulse transition-all duration-300"></div>
-                                <div className="mt-1 text-xs text-gray-400 font-montserrat-medium opacity-0 animate-pulse">...</div>
-                            </div>
-                        )}
-                    </div>
-
-                    <nav className="mt-4">
-                        {navigation.map((item, index) => (
-                            <Link
-                                key={item.name}
-                                to={item.href}
-                                className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 font-montserrat-medium mx-2 relative ${isActiveRoute(item.href)
-                                    ? 'bg-green-50 text-green-700 border-r-2 border-green-500 shadow-sm'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm'
-                                    }`}
-                                title={!sidebarOpen ? item.name : undefined}
-                                onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
-                                style={{
-                                    animationDelay: `${index * 50}ms`,
-                                    animationFillMode: 'both'
-                                }}
-                            >
-                                <span className="mr-3 text-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0 group-hover:text-green-600">{item.icon}</span>
-                                <span className={`transition-all duration-300 ${sidebarOpen ? 'opacity-100 w-auto' : 'opacity-0 w-0'} group-hover:translate-x-1 overflow-hidden whitespace-nowrap flex-shrink-0`}>{item.name}</span>
-                                {isActiveRoute(item.href) && (
-                                    <div className={`ml-auto w-2 h-2 bg-orange-500 rounded-full animate-pulse transition-all duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0'} group-hover:scale-125 flex-shrink-0 group-hover:animate-bounce`}></div>
-                                )}
-
-                                {/* Tooltip for collapsed state */}
-                                {!sidebarOpen && (
-                                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 transform scale-95 group-hover:scale-100">
-                                        {item.name}
-                                        <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
-                                    </div>
-                                )}
-                            </Link>
-                        ))}
-                    </nav>
-                </div>
+                <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
                 {/* Main Content */}
                 <div className={`flex-1 min-w-0 transition-all duration-700 ease-in-out overflow-visible relative z-10 ${sidebarOpen ? 'ml-64 lg:ml-64' : 'ml-0 lg:ml-16'}`}>

@@ -21,6 +21,7 @@ export function LoanManager() {
         if (usersRes && usersRes.ok) {
           const usersData = await usersRes.json();
           setUsers(usersData);
+          console.log('Users data:', usersData);
         }
 
         if (loansRes && loansRes.ok) {
