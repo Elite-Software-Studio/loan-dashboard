@@ -87,6 +87,10 @@ model User {
   documents         Document[]
   dependents        Dependent[]
   collaterals       Collateral[]
+  categories        Category[]
+  transactions      Transaction[]
+  budgets           Budget[]
+  monthlySummaries  MonthlySummary[]
 
   @@map("users")
   @@index([branchId])
@@ -171,6 +175,81 @@ model Collateral {
   @@map("collaterals")
 }
 
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String
+  icon      String
+  color     String
+  isDefault Boolean  @default(true)
+  userId    String?  // If null, it's a system category, otherwise user-created
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+  budgets       Budget[]
+
+  @@map("categories")
+  @@index([userId])
+}
+
+model Transaction {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  amount          Float
+  categoryId      Int
+  category        Category  @relation(fields: [categoryId], references: [id])
+  date            DateTime
+  note            String?
+  paymentMethod   String?
+  location        String?
+  isRecurring     Boolean   @default(false)
+  recurrenceType  String?   // 'none', 'daily', 'weekly', 'monthly', 'yearly'
+  recurringEndDate DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("transactions")
+  @@index([userId])
+  @@index([categoryId])
+  @@index([date])
+}
+
+model Budget {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  categoryId  Int?
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  amount      Float
+  period      BudgetPeriod
+  startDate   DateTime
+  endDate     DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("budgets")
+  @@index([userId])
+  @@index([categoryId])
+}
+
+model MonthlySummary {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  year              Int
+  month             Int      // 0-11 (JavaScript month format)
+  totalSpent        Float    @default(0)
+  categoryBreakdown Json     // Array of { categoryId: number, amount: number }
+  updatedAt         DateTime @default(now())
+
+  @@map("monthly_summaries")
+  @@index([userId])
+  @@index([year, month])
+  @@unique([userId, year, month])
+}
+
 enum UserRole {
   ADMIN
   USER
@@ -213,4 +292,11 @@ enum DocumentType {
   INCOME_PROOF
   BANK_STATEMENT
   LOAN_AGREEMENT
+}
+
+enum BudgetPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
 }

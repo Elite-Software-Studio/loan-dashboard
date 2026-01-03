@@ -13,5 +13,12 @@ export default [
   route("companies", "routes/companies.tsx"),
   route("api/users", "api/users.ts"),
   route("api/companies", "api/companies.ts"),
-  route("api/branches", "api/branches.ts")
+  route("api/branches", "api/branches.ts"),
+  route("api/auth", "api/auth.ts"),
+  route("api/loans", "api/loans.ts"),
+  route("api/payments", "api/payments.ts"),
+  route("api/documents", "api/documents.ts"),
+  route("api/transactions", "api/transactions.ts"),
+  route("api/budgets", "api/budgets.ts"),
+  route("api/categories", "api/categories.ts")
 ] satisfies RouteConfig;
