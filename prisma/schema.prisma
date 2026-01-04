@@ -4,12 +4,10 @@
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/.prisma/client"
-  seed     = "tsx prisma/seed.ts"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL_POSTGRESQL")
 }
 
 // Enhanced models for Proloans-style system
@@ -66,6 +64,7 @@ model User {
   id                String   @id @default(cuid())
   email             String   @unique
   name              String
+  password          String?  // Hashed password (optional for backward compatibility)
   role              UserRole @default(USER)
   profileImage      String?
   accountNumber     String   @unique

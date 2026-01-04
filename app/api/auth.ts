@@ -1,4 +1,6 @@
 import { prisma } from "../lib/prisma";
+import bcrypt from "bcrypt";
+import { generateToken, verifyToken, getUserIdFromRequest } from "../lib/jwt";
 
 const CORS_HEADERS = {
 	"Content-Type": "application/json",
@@ -43,15 +45,31 @@ export async function loader({ request }: { request: Request }) {
 			return Response.json(user, { headers: CORS_HEADERS });
 		}
 
-		// Get current user from Authorization header (if implemented)
-		const authHeader = request.headers.get("Authorization");
-		if (authHeader) {
-			// TODO: Implement JWT token validation
-			// For now, return error
-			return Response.json({ error: "Authentication not fully implemented" }, {
-				status: 401,
-				headers: CORS_HEADERS,
+		// Get current user from Authorization header using JWT token
+		const userIdFromToken = getUserIdFromRequest(request);
+		if (userIdFromToken) {
+			const user = await prisma.user.findUnique({
+				where: { id: userIdFromToken },
+				include: {
+					branch: {
+						include: {
+							company: true,
+						},
+					},
+					loans: true,
+				},
 			});
+
+			if (!user) {
+				return Response.json({ error: "User not found" }, {
+					status: 404,
+					headers: CORS_HEADERS,
+				});
+			}
+
+			// Return user without password
+			const { password: _, ...userWithoutPassword } = user;
+			return Response.json(userWithoutPassword, { headers: CORS_HEADERS });
 		}
 
 		return Response.json({ error: "Missing userId parameter" }, {
@@ -80,8 +98,15 @@ export async function action({ request }: { request: Request }) {
 		const { action: actionType, email, password, name } = body;
 
 		if (actionType === "signin") {
-			// Simple email-based authentication
-			// In production, use proper password hashing and JWT tokens
+			// Validate input
+			if (!email || !password) {
+				return Response.json({ error: "Email and password are required" }, {
+					status: 400,
+					headers: CORS_HEADERS,
+				});
+			}
+
+			// Find user by email
 			const user = await prisma.user.findUnique({
 				where: { email },
 				include: {
@@ -100,8 +125,28 @@ export async function action({ request }: { request: Request }) {
 				});
 			}
 
-			// TODO: Verify password hash
-			// For now, return user (in production, use bcrypt to verify password)
+			// Verify password
+			if (!user.password) {
+				// User exists but has no password (legacy user)
+				// For backward compatibility, allow login without password check
+				// In production, you might want to force password reset
+				console.warn(`User ${user.id} has no password set`);
+			} else {
+				const isPasswordValid = await bcrypt.compare(password, user.password);
+				if (!isPasswordValid) {
+					return Response.json({ error: "Invalid credentials" }, {
+						status: 401,
+						headers: CORS_HEADERS,
+					});
+				}
+			}
+
+			// Generate JWT token
+			const token = generateToken({
+				userId: user.id,
+				email: user.email,
+				role: user.role,
+			});
 
 			return Response.json({
 				user: {
@@ -111,13 +156,12 @@ export async function action({ request }: { request: Request }) {
 					role: user.role,
 					branch: user.branch,
 				},
-				// TODO: Generate JWT token
-				token: "temporary_token_" + user.id,
+				token,
 			}, { headers: CORS_HEADERS });
 		}
 
 		if (actionType === "signup") {
-			// Create new user
+			// Validate input
 			if (!email || !name) {
 				return Response.json({ error: "Email and name are required" }, {
 					status: 400,
@@ -137,14 +181,22 @@ export async function action({ request }: { request: Request }) {
 				});
 			}
 
+			// Hash password if provided
+			let hashedPassword: string | undefined;
+			if (password) {
+				const saltRounds = 10;
+				hashedPassword = await bcrypt.hash(password, saltRounds);
+			}
+
 			// Generate account number
 			const accountNumber = `ACC${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
-			// TODO: Hash password before storing
+			// Create user with hashed password
 			const user = await prisma.user.create({
 				data: {
 					email,
 					name,
+					password: hashedPassword,
 					accountNumber,
 					role: "USER",
 				},
@@ -157,6 +209,13 @@ export async function action({ request }: { request: Request }) {
 				},
 			});
 
+			// Generate JWT token
+			const token = generateToken({
+				userId: user.id,
+				email: user.email,
+				role: user.role,
+			});
+
 			return Response.json({
 				user: {
 					id: user.id,
@@ -165,7 +224,7 @@ export async function action({ request }: { request: Request }) {
 					role: user.role,
 					branch: user.branch,
 				},
-				token: "temporary_token_" + user.id,
+				token,
 			}, { headers: CORS_HEADERS });
 		}
 
