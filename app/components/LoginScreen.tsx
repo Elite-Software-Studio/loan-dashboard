@@ -10,13 +10,62 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // Test accounts that match seeded database users
+    // Test accounts that match seeded database users (all use password: password123)
     const testAccounts = [
-        { email: 'admin@proloans.com', password: 'admin123', role: 'ADMIN' },
-        { email: 'kiran.nair@example.com', password: 'kiran123', role: 'MANAGER' },
-        { email: 'mike.johnson@example.com', password: 'mike123', role: 'USER' },
-        { email: 'lisa.chen@example.com', password: 'lisa123', role: 'USER' },
-        { email: 'sarah.wilson@example.com', password: 'sarah123', role: 'USER' },
+        {
+            email: 'admin@proloans.com',
+            password: 'password123',
+            role: 'ADMIN',
+            name: 'Jeff D.',
+            description: 'Full admin access to all features',
+            icon: '👑',
+            color: 'from-purple-500 to-purple-600'
+        },
+        {
+            email: 'manager@proloans.com',
+            password: 'password123',
+            role: 'MANAGER',
+            name: 'Sarah Manager',
+            description: 'Manager access with reporting capabilities',
+            icon: '📊',
+            color: 'from-blue-500 to-blue-600'
+        },
+        {
+            email: 'kiran.nair@example.com',
+            password: 'password123',
+            role: 'USER',
+            name: 'Kiran Nair',
+            description: 'Regular user account',
+            icon: '👤',
+            color: 'from-green-500 to-green-600'
+        },
+        {
+            email: 'user1@example.com',
+            password: 'password123',
+            role: 'USER',
+            name: 'Mike Johnson',
+            description: 'Regular user account',
+            icon: '👤',
+            color: 'from-gray-500 to-gray-600'
+        },
+        {
+            email: 'user2@example.com',
+            password: 'password123',
+            role: 'USER',
+            name: 'Lisa Chen',
+            description: 'Regular user account',
+            icon: '👤',
+            color: 'from-gray-500 to-gray-600'
+        },
+        {
+            email: 'user3@example.com',
+            password: 'password123',
+            role: 'USER',
+            name: 'David Kim',
+            description: 'Regular user account',
+            icon: '👤',
+            color: 'from-gray-500 to-gray-600'
+        },
     ];
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -24,38 +73,39 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         setIsLoading(true);
         setError('');
 
-        // Simulate authentication delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+            // Call the real API for authentication
+            const response = await fetch('/api/auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'signin',
+                    email,
+                    password,
+                }),
+            });
 
-        // Check if credentials match test accounts
-        const testAccount = testAccounts.find(
-            account => account.email === email && account.password === password
-        );
+            if (!response.ok) {
+                const errorData = await response.json();
+                setError(errorData.error || 'Invalid email or password. Please try again.');
+                setIsLoading(false);
+                return;
+            }
 
-        if (testAccount) {
-            // Create a user object that matches the database structure
-            const user = {
-                id: `user-${testAccount.email}`, // Generate a consistent ID
-                email: testAccount.email,
-                name: testAccount.email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                role: testAccount.role,
-                accountNumber: `ACC${Date.now()}`, // Generate unique account number
-                creditScore: 800,
-                internalRiskScore: 16.66,
-                maxRiskScore: 18.0,
-                averageRate: 12.21,
-                totalBorrowed: 500000.0,
-                totalRepaid: 100000.0,
-                memberType: 'ELITE' as const,
-            };
+            const data = await response.json();
+            const { user, token } = data;
 
-            // Store user in localStorage for persistence
+            // Store user and token in localStorage
             localStorage.setItem('proloans-user', JSON.stringify(user));
+            localStorage.setItem('auth_token', token);
 
             // Call the onLogin callback
             onLogin(user);
-        } else {
-            setError('Invalid email or password. Please try again.');
+        } catch (err) {
+            console.error('Login error:', err);
+            setError('Failed to connect to server. Please try again.');
         }
 
         setIsLoading(false);
@@ -183,22 +233,64 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                                 <div className="w-full border-t border-gray-300" />
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white text-gray-500 font-montserrat-medium">Quick Access (Demo)</span>
+                                <span className="px-3 bg-white text-gray-600 font-montserrat-semibold">Quick Access (Demo)</span>
                             </div>
                         </div>
 
-                        <div className="mt-4 space-y-2">
+                        <div className="mt-4 space-y-2 max-h-64 overflow-y-auto">
                             {testAccounts.map((account, index) => (
                                 <button
                                     key={index}
                                     onClick={() => handleTestAccount(account)}
-                                    className="w-full text-left p-3 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                                    className="w-full text-left p-3 border-2 border-gray-200 rounded-lg hover:border-green-400 hover:shadow-md transition-all duration-200 group bg-white"
                                 >
-                                    <div className="font-medium text-gray-900 font-montserrat-semibold">{account.role}</div>
-                                    <div className="text-gray-500 text-xs font-montserrat-regular">{account.email}</div>
-                                    <div className="text-gray-400 text-xs font-montserrat-regular">Click to fill credentials</div>
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex items-center space-x-3 flex-1">
+                                            <div className={`flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br ${account.color} flex items-center justify-center text-white text-lg group-hover:scale-110 transition-transform duration-200`}>
+                                                {account.icon}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center space-x-2">
+                                                    <span className="font-semibold text-gray-900 font-montserrat-semibold text-sm">
+                                                        {account.name}
+                                                    </span>
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${account.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' :
+                                                        account.role === 'MANAGER' ? 'bg-blue-100 text-blue-800' :
+                                                            'bg-gray-100 text-gray-800'
+                                                        } font-montserrat-medium`}>
+                                                        {account.role}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-1 text-xs text-gray-600 font-montserrat-regular truncate">
+                                                    {account.email}
+                                                </div>
+                                                <div className="mt-1 text-xs text-gray-500 font-montserrat-regular">
+                                                    {account.description}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex-shrink-0 ml-2">
+                                            <svg className="w-5 h-5 text-gray-400 group-hover:text-green-600 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div className="mt-2 pt-2 border-t border-gray-100">
+                                        <div className="flex items-center text-xs text-gray-400 font-montserrat-regular">
+                                            <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            Password: password123
+                                        </div>
+                                    </div>
                                 </button>
                             ))}
+                        </div>
+                        <div className="mt-3 text-center">
+                            <p className="text-xs text-gray-500 font-montserrat-regular">
+                                All demo accounts use the same password: <span className="font-semibold text-gray-700">password123</span>
+                            </p>
                         </div>
                     </div>
                 </div>

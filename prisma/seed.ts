@@ -412,6 +412,157 @@ async function main() {
 
 	console.log(`💰 Created ${loans.length} loans`);
 
+	// Create mobile loan requests for admin review
+	const mobileLoanRequests = await Promise.all([
+		// Pending mobile requests
+		prisma.loan.create({
+			data: {
+				loanNumber: "MOB001234567",
+				type: "PERSONAL_LOAN",
+				amount: 15000.0,
+				rate: 14.5,
+				status: "PENDING",
+				startDate: new Date("2024-12-15"),
+				description: "Personal loan request from mobile app for home renovation",
+				requestSource: "mobile",
+				userId: users[3].id, // Mike Johnson
+				branchId: branches[1].id, // Boston Branch
+			},
+		}),
+		prisma.loan.create({
+			data: {
+				loanNumber: "MOB001234568",
+				type: "CAR_LOAN",
+				amount: 28000.0,
+				rate: 11.8,
+				status: "PENDING",
+				startDate: new Date("2024-12-20"),
+				description: "Car loan application submitted via mobile app",
+				requestSource: "mobile",
+				userId: users[4].id, // Lisa Chen
+				branchId: branches[2].id, // LAX Branch
+			},
+		}),
+		prisma.loan.create({
+			data: {
+				loanNumber: "MOB001234569",
+				type: "HOME_LOAN",
+				amount: 350000.0,
+				rate: 7.5,
+				status: "PENDING",
+				startDate: new Date("2025-01-01"),
+				description: "Home loan request for first-time homebuyer",
+				requestSource: "mobile",
+				userId: users[6].id, // Maria Rodriguez
+				branchId: branches[4].id, // Chicago Branch
+			},
+		}),
+		// Needs more info status
+		prisma.loan.create({
+			data: {
+				loanNumber: "MOB001234570",
+				type: "BUSINESS_LOAN",
+				amount: 75000.0,
+				rate: 12.0,
+				status: "NEEDS_MORE_INFO",
+				startDate: new Date("2024-11-10"),
+				description: "Business expansion loan - requires additional documentation",
+				requestSource: "mobile",
+				adminNotes:
+					"Please provide last 3 months of business bank statements and updated business plan.",
+				reviewedAt: new Date("2024-11-15"),
+				reviewedBy: users[0].id, // Admin user
+				userId: users[5].id, // David Kim
+				branchId: branches[3].id, // SF Branch
+			},
+		}),
+		prisma.loan.create({
+			data: {
+				loanNumber: "MOB001234571",
+				type: "EDUCATION_LOAN",
+				amount: 45000.0,
+				rate: 9.5,
+				status: "NEEDS_MORE_INFO",
+				startDate: new Date("2024-12-01"),
+				description: "Education loan for graduate program",
+				requestSource: "mobile",
+				adminNotes:
+					"Need verification of enrollment and tuition costs from the educational institution.",
+				reviewedAt: new Date("2024-12-05"),
+				reviewedBy: users[0].id, // Admin user
+				userId: users[1].id, // Kiran Nair
+				branchId: branches[0].id, // NYC Branch
+			},
+		}),
+		// Approved mobile request
+		prisma.loan.create({
+			data: {
+				loanNumber: "MOB001234572",
+				type: "PERSONAL_LOAN",
+				amount: 10000.0,
+				rate: 13.2,
+				status: "APPROVED",
+				startDate: new Date("2024-10-15"),
+				description: "Personal loan approved from mobile app",
+				requestSource: "mobile",
+				adminNotes: "Approved - Good credit history and stable income verified.",
+				reviewedAt: new Date("2024-10-16"),
+				reviewedBy: users[0].id, // Admin user
+				userId: users[3].id, // Mike Johnson
+				branchId: branches[1].id, // Boston Branch
+			},
+		}),
+		// Rejected mobile request
+		prisma.loan.create({
+			data: {
+				loanNumber: "MOB001234573",
+				type: "CAR_LOAN",
+				amount: 50000.0,
+				rate: 15.0,
+				status: "REJECTED",
+				startDate: new Date("2024-09-20"),
+				description: "Car loan request rejected",
+				requestSource: "mobile",
+				adminNotes: "Rejected - Insufficient credit score and high debt-to-income ratio.",
+				reviewedAt: new Date("2024-09-22"),
+				reviewedBy: users[0].id, // Admin user
+				userId: users[4].id, // Lisa Chen
+				branchId: branches[2].id, // LAX Branch
+			},
+		}),
+		// More pending requests for variety
+		prisma.loan.create({
+			data: {
+				loanNumber: "MOB001234574",
+				type: "HOME_LOAN",
+				amount: 425000.0,
+				rate: 6.8,
+				status: "PENDING",
+				startDate: new Date("2025-01-10"),
+				description: "Home loan for investment property",
+				requestSource: "mobile",
+				userId: users[5].id, // David Kim
+				branchId: branches[3].id, // SF Branch
+			},
+		}),
+		prisma.loan.create({
+			data: {
+				loanNumber: "MOB001234575",
+				type: "BUSINESS_LOAN",
+				amount: 120000.0,
+				rate: 10.5,
+				status: "PENDING",
+				startDate: new Date("2024-12-28"),
+				description: "Business loan for equipment purchase",
+				requestSource: "mobile",
+				userId: users[1].id, // Kiran Nair
+				branchId: branches[0].id, // NYC Branch
+			},
+		}),
+	]);
+
+	console.log(`📱 Created ${mobileLoanRequests.length} mobile loan requests`);
+
 	// Create sample payments (associated with branches)
 	const payments = await Promise.all([
 		prisma.payment.create({
@@ -598,7 +749,7 @@ async function main() {
 		prisma.transaction.create({
 			data: {
 				userId: users[1].id, // Kiran Nair
-				amount: 45.50,
+				amount: 45.5,
 				categoryId: categories[0].id, // Food & Dining
 				date: new Date("2024-01-15"),
 				note: "Lunch at restaurant",
@@ -609,7 +760,7 @@ async function main() {
 		prisma.transaction.create({
 			data: {
 				userId: users[1].id,
-				amount: 120.00,
+				amount: 120.0,
 				categoryId: categories[1].id, // Shopping
 				date: new Date("2024-01-16"),
 				note: "Grocery shopping",
@@ -620,7 +771,7 @@ async function main() {
 		prisma.transaction.create({
 			data: {
 				userId: users[1].id,
-				amount: 35.00,
+				amount: 35.0,
 				categoryId: categories[2].id, // Transportation
 				date: new Date("2024-01-17"),
 				note: "Uber ride",
@@ -631,7 +782,7 @@ async function main() {
 		prisma.transaction.create({
 			data: {
 				userId: users[3].id, // Mike Johnson
-				amount: 150.00,
+				amount: 150.0,
 				categoryId: categories[3].id, // Bills & Utilities
 				date: new Date("2024-01-18"),
 				note: "Electric bill",
@@ -642,7 +793,7 @@ async function main() {
 		prisma.transaction.create({
 			data: {
 				userId: users[4].id, // Lisa Chen
-				amount: 80.00,
+				amount: 80.0,
 				categoryId: categories[4].id, // Entertainment
 				date: new Date("2024-01-19"),
 				note: "Movie tickets",
@@ -653,7 +804,7 @@ async function main() {
 		prisma.transaction.create({
 			data: {
 				userId: users[5].id, // David Kim
-				amount: 200.00,
+				amount: 200.0,
 				categoryId: categories[5].id, // Healthcare
 				date: new Date("2024-01-20"),
 				note: "Doctor visit",
@@ -671,7 +822,7 @@ async function main() {
 			data: {
 				userId: users[1].id, // Kiran Nair
 				categoryId: categories[0].id, // Food & Dining
-				amount: 500.00,
+				amount: 500.0,
 				period: "MONTHLY",
 				startDate: new Date("2024-01-01"),
 				endDate: new Date("2024-01-31"),
@@ -681,7 +832,7 @@ async function main() {
 			data: {
 				userId: users[1].id,
 				categoryId: categories[1].id, // Shopping
-				amount: 300.00,
+				amount: 300.0,
 				period: "MONTHLY",
 				startDate: new Date("2024-01-01"),
 				endDate: new Date("2024-01-31"),
@@ -690,7 +841,7 @@ async function main() {
 		prisma.budget.create({
 			data: {
 				userId: users[3].id, // Mike Johnson
-				amount: 2000.00,
+				amount: 2000.0,
 				period: "MONTHLY",
 				startDate: new Date("2024-01-01"),
 				endDate: new Date("2024-01-31"),
@@ -700,7 +851,7 @@ async function main() {
 			data: {
 				userId: users[4].id, // Lisa Chen
 				categoryId: categories[4].id, // Entertainment
-				amount: 150.00,
+				amount: 150.0,
 				period: "MONTHLY",
 				startDate: new Date("2024-01-01"),
 				endDate: new Date("2024-01-31"),
@@ -717,11 +868,11 @@ async function main() {
 				userId: users[1].id, // Kiran Nair
 				year: 2024,
 				month: 0, // January (0-indexed)
-				totalSpent: 200.50,
+				totalSpent: 200.5,
 				categoryBreakdown: [
-					{ categoryId: categories[0].id, amount: 45.50 },
-					{ categoryId: categories[1].id, amount: 120.00 },
-					{ categoryId: categories[2].id, amount: 35.00 },
+					{ categoryId: categories[0].id, amount: 45.5 },
+					{ categoryId: categories[1].id, amount: 120.0 },
+					{ categoryId: categories[2].id, amount: 35.0 },
 				],
 			},
 		}),
@@ -730,10 +881,8 @@ async function main() {
 				userId: users[3].id, // Mike Johnson
 				year: 2024,
 				month: 0,
-				totalSpent: 150.00,
-				categoryBreakdown: [
-					{ categoryId: categories[3].id, amount: 150.00 },
-				],
+				totalSpent: 150.0,
+				categoryBreakdown: [{ categoryId: categories[3].id, amount: 150.0 }],
 			},
 		}),
 	]);
@@ -746,6 +895,7 @@ async function main() {
 	console.log(`   Branches: ${branches.length}`);
 	console.log(`   Users: ${users.length}`);
 	console.log(`   Loans: ${loans.length}`);
+	console.log(`   Mobile Loan Requests: ${mobileLoanRequests.length}`);
 	console.log(`   Payments: ${payments.length}`);
 	console.log(`   Documents: ${documents.length}`);
 	console.log(`   Categories: ${categories.length}`);
@@ -779,7 +929,7 @@ async function main() {
 		const userLoans = loans.filter((l) => l.userId === user.id);
 		if (userLoans.length > 0) {
 			const branch = branches.find((b) => b.id === user.branchId);
-			console.log(`   - ${user.name} (${branch?.name || 'No Branch'}): ${userLoans.length} loans`);
+			console.log(`   - ${user.name} (${branch?.name || "No Branch"}): ${userLoans.length} loans`);
 		}
 	}
 
@@ -790,6 +940,15 @@ async function main() {
 			console.log(`   ${branch.name}: ${branchUsers.length} users`);
 		}
 	}
+
+	console.log("\n📱 Mobile Loan Requests by Status:");
+	const statusCounts: Record<string, number> = {};
+	mobileLoanRequests.forEach((loan) => {
+		statusCounts[loan.status] = (statusCounts[loan.status] || 0) + 1;
+	});
+	Object.entries(statusCounts).forEach(([status, count]) => {
+		console.log(`   ${status.replace("_", " ")}: ${count} requests`);
+	});
 }
 
 main()

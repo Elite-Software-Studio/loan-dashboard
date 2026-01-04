@@ -56,6 +56,12 @@ export default function LoanRequests() {
 		setError(null);
 		try {
 			const token = localStorage.getItem('auth_token');
+			if (!token) {
+				setError('Not authenticated. Please log in again.');
+				setLoading(false);
+				return;
+			}
+
 			const params = new URLSearchParams({
 				adminView: 'true',
 				requestSource: filters.requestSource || 'mobile',
@@ -73,10 +79,14 @@ export default function LoanRequests() {
 			});
 
 			if (!response.ok) {
-				if (response.status === 403) {
-					setError('Access denied. Admin privileges required.');
+				if (response.status === 401 || response.status === 403) {
+					setError('Access denied. Admin privileges required. Please log in as an admin user.');
+					// Clear invalid token
+					localStorage.removeItem('auth_token');
+					localStorage.removeItem('proloans-user');
 				} else {
-					setError('Failed to fetch loan requests');
+					const errorData = await response.json().catch(() => ({ error: 'Failed to fetch loan requests' }));
+					setError(errorData.error || 'Failed to fetch loan requests');
 				}
 				return;
 			}
@@ -85,7 +95,7 @@ export default function LoanRequests() {
 			setLoans(data);
 		} catch (err) {
 			console.error('Error fetching loan requests:', err);
-			setError('Failed to fetch loan requests');
+			setError('Failed to fetch loan requests. Please check your connection.');
 		} finally {
 			setLoading(false);
 		}

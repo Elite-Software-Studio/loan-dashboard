@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { useAuth } from "../lib/auth";
+import { useState, useEffect, useRef, useContext } from "react";
+import { AuthContext } from "../lib/auth";
 import { useLocation, Link } from "react-router";
 import { NAVIGATION_ITEMS } from "../lib/constants";
 import { getUserInitials } from "../lib/utils";
@@ -14,7 +14,27 @@ import { Sidebar } from "./Sidebar";
 export function ProloansLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [showUserMenu, setShowUserMenu] = useState(false);
-    const { user, logout } = useAuth();
+    
+    // Get auth context directly - will be undefined if not in provider
+    const authContext = useContext(AuthContext);
+    
+    // Fallback to localStorage if context is not available
+    let user = authContext?.user;
+    if (!user) {
+        try {
+            const storedUser = localStorage.getItem('proloans-user');
+            user = storedUser ? JSON.parse(storedUser) : null;
+        } catch {
+            user = null;
+        }
+    }
+    
+    const logout = authContext?.logout || (() => {
+        localStorage.removeItem('proloans-user');
+        localStorage.removeItem('auth_token');
+        window.location.href = '/';
+    });
+    
     const location = useLocation();
     const userMenuRef = useRef<HTMLDivElement>(null);
 
