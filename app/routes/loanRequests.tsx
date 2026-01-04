@@ -137,7 +137,7 @@ export default function LoanRequests() {
 			header: 'Borrower',
 			render: (value, loan) => (
 				<div>
-					<div className="font-medium">{loan.user.name}</div>
+					<div className="font-medium text-gray-900">{loan.user.name}</div>
 					<div className="text-sm text-gray-500">{loan.user.email}</div>
 				</div>
 			),
@@ -145,17 +145,25 @@ export default function LoanRequests() {
 		{
 			key: 'type',
 			header: 'Type',
-			render: (value, loan) => loan.type.replace('_', ' '),
+			render: (value, loan) => (
+				<span className="text-gray-900">{loan.type.replace('_', ' ')}</span>
+			),
 		},
 		{
 			key: 'amount',
 			header: 'Amount',
-			render: (value, loan) => `$${loan.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+			render: (value, loan) => (
+				<span className="text-gray-900 font-medium">
+					${loan.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+				</span>
+			),
 		},
 		{
 			key: 'rate',
 			header: 'Rate',
-			render: (value, loan) => `${loan.rate}%`,
+			render: (value, loan) => (
+				<span className="text-gray-900">{loan.rate}%</span>
+			),
 		},
 		{
 			key: 'status',
@@ -165,12 +173,16 @@ export default function LoanRequests() {
 		{
 			key: 'createdAt',
 			header: 'Requested',
-			render: (value, loan) => new Date(loan.createdAt).toLocaleDateString(),
+			render: (value, loan) => (
+				<span className="text-gray-900">{new Date(loan.createdAt).toLocaleDateString()}</span>
+			),
 		},
 		{
 			key: 'branch',
 			header: 'Branch',
-			render: (value, loan) => loan.branch.name,
+			render: (value, loan) => (
+				<span className="text-gray-900">{loan.branch.name}</span>
+			),
 		},
 	];
 
@@ -196,7 +208,7 @@ export default function LoanRequests() {
 							<select
 								value={filters.status}
 								onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
 							>
 								<option value="">All Statuses</option>
 								<option value="PENDING">Pending</option>
@@ -213,7 +225,7 @@ export default function LoanRequests() {
 								type="date"
 								value={filters.startDate}
 								onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
 							/>
 						</div>
 						<div>
@@ -224,7 +236,7 @@ export default function LoanRequests() {
 								type="date"
 								value={filters.endDate}
 								onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
 							/>
 						</div>
 						<div>
@@ -236,7 +248,7 @@ export default function LoanRequests() {
 								value={filters.userId}
 								onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
 								placeholder="Filter by user ID"
-								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
 							/>
 						</div>
 					</div>

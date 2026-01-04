@@ -128,7 +128,7 @@ export function DataTable<T extends Record<string, any>>({
                                         return (
                                             <td
                                                 key={cellKey}
-                                                className={`px-6 py-4 whitespace-nowrap ${column.className || ""}`}
+                                                className={`px-6 py-4 whitespace-nowrap text-gray-900 ${column.className || ""}`}
                                             >
                                                 {cellContent}
                                             </td>

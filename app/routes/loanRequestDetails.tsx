@@ -395,7 +395,7 @@ export default function LoanRequestDetails() {
 								value={moreInfoNotes}
 								onChange={(e) => setMoreInfoNotes(e.target.value)}
 								placeholder="Enter the information you need from the borrower..."
-								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 text-gray-900 bg-white placeholder-gray-500"
 								rows={5}
 							/>
 							<div className="flex justify-end gap-4">

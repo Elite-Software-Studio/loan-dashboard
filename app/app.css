@@ -53,3 +53,27 @@ body {
 	font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
 	font-weight: 900;
 }
+
+/* Ensure all form inputs have visible text */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+textarea,
+select {
+	@apply text-gray-900 bg-white;
+}
+
+input::placeholder,
+textarea::placeholder {
+	@apply text-gray-500;
+}
+
+/* Ensure date inputs show text */
+input[type="date"]::-webkit-calendar-picker-indicator {
+	@apply opacity-100;
+}
