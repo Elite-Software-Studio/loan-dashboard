@@ -11,8 +11,6 @@ A comprehensive backend API and admin dashboard for the Loan Management System, 
 - 📈 Transaction and budget tracking
 - 📄 Document management
 - 🗄️ PostgreSQL database with Prisma ORM
-- 🐳 Docker support
-- ☸️ Kubernetes deployment ready
 - 🔒 TypeScript by default
 - 🎉 TailwindCSS for styling
 
@@ -21,7 +19,7 @@ A comprehensive backend API and admin dashboard for the Loan Management System, 
 ### Prerequisites
 
 - Node.js (v18 or higher)
-- PostgreSQL (via Docker or local installation)
+- PostgreSQL (local installation or cloud service)
 - npm or yarn
 
 ### Installation
@@ -34,25 +32,29 @@ A comprehensive backend API and admin dashboard for the Loan Management System, 
 2. **Set up environment variables**
    Create a `.env` file in the root directory:
    ```env
-   DATABASE_URL="postgresql://user:password@localhost:5432/loan_db"
+   DATABASE_URL_POSTGRESQL="postgresql://user:password@localhost:5432/loan_db"
    JWT_SECRET="your-super-secret-jwt-key-change-in-production"
    JWT_EXPIRES_IN="7d"
    ```
+   
+   **Note:** You'll need to set up your own PostgreSQL database. You can use:
+   - Local PostgreSQL installation
+   - Cloud services like Neon, Supabase, or AWS RDS
+   - Managed database services
 
-3. **Start PostgreSQL database**
-   ```bash
-   npm run db:start
-   ```
-   Or use your own PostgreSQL instance and update `DATABASE_URL`.
-
-4. **Run database migrations**
+3. **Run database migrations**
    ```bash
    npx prisma migrate dev
    ```
 
-5. **Generate Prisma Client**
+4. **Generate Prisma Client**
    ```bash
    npm run prisma:generate
+   ```
+
+5. **Seed the database (optional)**
+   ```bash
+   npm run prisma:seed
    ```
 
 ### Development
@@ -158,54 +160,25 @@ npm run build
 
 ## 🚢 Deployment
 
-### Docker Deployment
+This project is ready for deployment to various platforms. You'll need to:
 
-See `DOCKER_DEPLOYMENT.md` for detailed Docker setup.
-
-**Quick start:**
-```bash
-docker-compose up -d
-```
-
-### Kubernetes Deployment
-
-See `K8S_DEPLOYMENT.md` for Kubernetes deployment instructions.
-
-**Quick start with K3D (local):**
-```bash
-npm run k3d:setup
-npm run k3d:build-load
-npm run k3d:deploy
-```
-
-### Platform Deployment
-
-The containerized application can be deployed to:
-
-- AWS ECS / EKS
-- Google Cloud Run / GKE
-- Azure Container Apps / AKS
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-- Heroku
+1. Set up a PostgreSQL database (managed service recommended)
+2. Configure environment variables
+3. Build the application
+4. Deploy to your chosen platform
 
 ### Environment Variables for Production
 
 ```env
-DATABASE_URL="postgresql://..."
+DATABASE_URL_POSTGRESQL="postgresql://..."
 JWT_SECRET="strong-production-secret-key"
 JWT_EXPIRES_IN="7d"
 NODE_ENV="production"
-PORT=3000
 ```
 
 ## 📖 Additional Documentation
 
 - `SETUP.md` - Detailed setup instructions
-- `DOCKER_DEPLOYMENT.md` - Docker deployment guide
-- `K8S_DEPLOYMENT.md` - Kubernetes deployment guide
-- `K3D_QUICKSTART.md` - Local Kubernetes testing
 - `BRANCH_MANAGEMENT.md` - Branch management system
 - `NPM_SCRIPTS.md` - Available npm scripts
 
@@ -235,9 +208,7 @@ loan_admin/
 ├── prisma/
 │   ├── schema.prisma     # Database schema
 │   └── migrations/       # Database migrations
-├── k8s/                  # Kubernetes manifests
-├── scripts/              # Utility scripts
-└── docker-compose.yml    # Docker setup
+└── scripts/              # Utility scripts
 ```
 
 ## 🔐 Security Features

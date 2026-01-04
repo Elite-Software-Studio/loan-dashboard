@@ -33,10 +33,13 @@ export async function loader({ request }: { request: Request }) {
 			});
 
 			if (!budget) {
-				return Response.json({ error: "Budget not found" }, {
-					status: 404,
-					headers: CORS_HEADERS,
-				});
+				return Response.json(
+					{ error: "Budget not found" },
+					{
+						status: 404,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 
 			return Response.json(budget, { headers: CORS_HEADERS });
@@ -68,10 +71,13 @@ export async function loader({ request }: { request: Request }) {
 		return Response.json(budgets, { headers: CORS_HEADERS });
 	} catch (error) {
 		console.error("Budgets API Error:", error);
-		return Response.json({ error: "Internal Server Error" }, {
-			status: 500,
-			headers: CORS_HEADERS,
-		});
+		return Response.json(
+			{ error: "Internal Server Error" },
+			{
+				status: 500,
+				headers: CORS_HEADERS,
+			}
+		);
 	}
 }
 
@@ -89,20 +95,16 @@ export async function action({ request }: { request: Request }) {
 
 		if (actionType === "create" || request.method === "POST") {
 			// Create or update budget
-			const {
-				userId,
-				categoryId,
-				amount,
-				period,
-				startDate,
-				endDate,
-			} = body;
+			const { userId, categoryId, amount, period, startDate, endDate } = body;
 
 			if (!userId || !amount || !period || !startDate) {
-				return Response.json({ error: "Missing required fields" }, {
-					status: 400,
-					headers: CORS_HEADERS,
-				});
+				return Response.json(
+					{ error: "Missing required fields" },
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 
 			// Check if budget already exists
@@ -155,10 +157,13 @@ export async function action({ request }: { request: Request }) {
 			const { id, ...updateData } = body;
 
 			if (!id) {
-				return Response.json({ error: "Budget ID is required" }, {
-					status: 400,
-					headers: CORS_HEADERS,
-				});
+				return Response.json(
+					{ error: "Budget ID is required" },
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 
 			// Convert date strings to Date objects if present
@@ -192,10 +197,13 @@ export async function action({ request }: { request: Request }) {
 			const { id } = body;
 
 			if (!id) {
-				return Response.json({ error: "Budget ID is required" }, {
-					status: 400,
-					headers: CORS_HEADERS,
-				});
+				return Response.json(
+					{ error: "Budget ID is required" },
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 
 			await prisma.budget.delete({
@@ -205,16 +213,21 @@ export async function action({ request }: { request: Request }) {
 			return Response.json({ success: true }, { headers: CORS_HEADERS });
 		}
 
-		return Response.json({ error: "Invalid action" }, {
-			status: 400,
-			headers: CORS_HEADERS,
-		});
+		return Response.json(
+			{ error: "Invalid action" },
+			{
+				status: 400,
+				headers: CORS_HEADERS,
+			}
+		);
 	} catch (error) {
 		console.error("Budgets API Error:", error);
-		return Response.json({ error: "Internal Server Error" }, {
-			status: 500,
-			headers: CORS_HEADERS,
-		});
+		return Response.json(
+			{ error: "Internal Server Error" },
+			{
+				status: 500,
+				headers: CORS_HEADERS,
+			}
+		);
 	}
 }
-

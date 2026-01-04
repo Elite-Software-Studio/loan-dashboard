@@ -1,33 +1,31 @@
 # Loan Admin System Setup Guide
 
-This project uses Prisma, tRPC, and PostgreSQL with Docker for a full-stack loan administration system.
+This project uses Prisma, React Router, and PostgreSQL for a full-stack loan administration system.
 
 ## Prerequisites
 
-- Docker and Docker Compose installed
-- Node.js 18+ and npm
+- Node.js 24+ and npm
+- PostgreSQL database (local installation or cloud service)
 - Git
 
 ## Quick Start
 
-### 1. Start the Database
+### 1. Set Up Your Database
 
-```bash
-# Start PostgreSQL and pgAdmin
-docker-compose up -d
+You'll need a PostgreSQL database. You can use:
 
-# Verify containers are running
-docker-compose ps
+- **Local PostgreSQL**: Install PostgreSQL on your machine
+- **Cloud Services**: 
+  - Neon (https://neon.tech) - Free tier available
+  - Supabase (https://supabase.com) - Free tier available
+  - AWS RDS, Google Cloud SQL, Azure Database, etc.
+
+**Database Configuration:**
+
+Create a database and note the connection string. It should look like:
 ```
-
-**Database Access:**
-
-- PostgreSQL: `localhost:5432`
-    - Database: `loan_admin`
-    - Username: `postgres`
-    - Password: `postgres`
-- pgAdmin: `http://localhost:8080`
-    - Email: `admin@loanadmin.com`
+postgresql://username:password@host:port/database_name
+```
     - Password: `admin`
 
 ### 2. Install Dependencies
@@ -36,20 +34,32 @@ docker-compose ps
 npm install
 ```
 
-### 3. Set up the Database
+### 3. Configure Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+DATABASE_URL_POSTGRESQL="postgresql://username:password@host:port/database_name"
+JWT_SECRET="your-super-secret-jwt-key-change-in-production"
+JWT_EXPIRES_IN="7d"
+```
+
+Replace the connection string with your actual PostgreSQL connection details.
+
+### 4. Set up the Database
 
 ```bash
 # Generate Prisma client
-npx prisma generate
+npm run prisma:generate
 
 # Run database migrations
-npx prisma migrate dev --name init
+npm run prisma:migrate
 
-# (Optional) Seed the database
-npx prisma db seed
+# (Optional) Seed the database with sample data
+npm run prisma:seed
 ```
 
-### 4. Start the Development Server
+### 5. Start the Development Server
 
 ```bash
 npm run dev
@@ -62,31 +72,39 @@ The application will be available at `http://localhost:5173`
 ```
 loan_admin/
 ├── app/
-│   ├── api/trpc/          # tRPC API routes
-│   ├── components/        # React components
-│   ├── lib/              # tRPC and Prisma setup
-│   └── routes/           # React Router routes
-├── prisma/               # Database schema and migrations
-├── docker-compose.yml    # PostgreSQL and pgAdmin setup
-└── .env                  # Environment variables
+│   ├── api/              # REST API route handlers
+│   ├── components/       # React components
+│   ├── lib/             # Utilities (JWT, Prisma, etc.)
+│   └── routes/          # React Router page routes
+├── prisma/              # Database schema and migrations
+│   ├── schema.prisma    # Prisma schema definition
+│   └── migrations/      # Database migration files
+└── .env                 # Environment variables
 ```
 
 ## Key Features
 
 - **User Management**: Create and manage users with different roles
 - **Loan Management**: Create loans, track status, and manage approvals
-- **Real-time Updates**: tRPC provides type-safe API calls with automatic updates
+- **RESTful API**: Type-safe API endpoints with JWT authentication
 - **Database**: PostgreSQL with Prisma ORM for type-safe database operations
+- **Admin Dashboard**: React-based admin interface
 
 ## API Endpoints
 
-The tRPC API provides the following procedures:
+The REST API provides the following endpoints:
 
-- `getUsers` - Fetch all users with their loans
-- `createUser` - Create a new user
-- `getLoans` - Fetch all loans with user information
-- `createLoan` - Create a new loan
-- `updateLoanStatus` - Update loan status
+- `POST /api/auth` - Sign in / Sign up
+- `GET /api/users` - Fetch all users
+- `GET /api/loans` - Fetch all loans
+- `POST /api/loans` - Create a new loan
+- `PUT /api/loans` - Update loan
+- `GET /api/payments` - Fetch payments
+- `POST /api/payments` - Create payment
+- `GET /api/transactions` - Fetch transactions
+- `GET /api/budgets` - Fetch budgets
+
+See `README.md` for complete API documentation.
 
 ## Development
 
@@ -101,43 +119,41 @@ npx prisma generate
 ### Viewing the Database
 
 ```bash
-# Open Prisma Studio
-npx prisma studio
-
-# Or use pgAdmin at http://localhost:8080
+# Open Prisma Studio (visual database browser)
+npm run prisma:studio
 ```
 
-### Stopping the Database
-
-```bash
-docker-compose down
-```
+This will open a web interface at `http://localhost:5555` where you can view and edit your database.
 
 ## Troubleshooting
 
 ### Database Connection Issues
 
-1. Ensure Docker containers are running: `docker-compose ps`
-2. Check the `.env` file has correct DATABASE_URL
-3. Verify PostgreSQL is accessible on port 5432
+1. Verify your PostgreSQL database is running and accessible
+2. Check the `.env` file has correct `DATABASE_URL_POSTGRESQL`
+3. Test your connection string with a PostgreSQL client
+4. Ensure your database user has proper permissions
 
 ### Prisma Issues
 
-1. Regenerate the client: `npx prisma generate`
-2. Reset the database: `npx prisma migrate reset`
+1. Regenerate the client: `npm run prisma:generate`
+2. Reset the database: `npm run prisma:reset` (⚠️ This will delete all data)
 3. Check schema syntax: `npx prisma validate`
+4. If migrations are out of sync: `npx prisma migrate resolve --applied <migration_name>`
 
-### tRPC Issues
+### API Issues
 
-1. Ensure the API route is accessible at `/api/trpc`
+1. Ensure the API routes are accessible at `/api/*`
 2. Check browser console for network errors
-3. Verify the TRPCProvider is wrapping your app
+3. Verify JWT token is being sent in Authorization header
+4. Check server logs for detailed error messages
 
 ## Production Considerations
 
-- Change default passwords in docker-compose.yml
-- Use environment variables for sensitive data
+- Use strong, unique `JWT_SECRET` in production
+- Use environment variables for all sensitive data
 - Set up proper SSL/TLS for database connections
-- Implement authentication and authorization
-- Add rate limiting and input validation
+- Implement rate limiting and input validation
 - Set up proper logging and monitoring
+- Use a managed PostgreSQL service for production
+- Regularly backup your database
