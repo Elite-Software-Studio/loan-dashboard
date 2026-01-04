@@ -1,11 +1,26 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+import bcrypt from "bcrypt";
+import "dotenv/config";
 
-const prisma = new PrismaClient();
+const { Pool } = pg;
+
+// Create PostgreSQL connection pool
+const connectionString = process.env.DATABASE_URL_POSTGRESQL || process.env.DATABASE_URL || "";
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
 	console.log("🌱 Starting Proloans database seeding...");
 
 	// Clear existing data (in correct order due to foreign keys)
+	await prisma.transaction.deleteMany();
+	await prisma.monthlySummary.deleteMany();
+	await prisma.budget.deleteMany();
+	await prisma.category.deleteMany();
 	await prisma.collateral.deleteMany();
 	await prisma.dependent.deleteMany();
 	await prisma.document.deleteMany();
@@ -150,12 +165,16 @@ async function main() {
 
 	console.log(`📍 Created ${branches.length} branches`);
 
+	// Hash password for all users
+	const defaultPassword = await bcrypt.hash("password123", 10);
+
 	// Create sample users with Proloans-style data (associated with branches)
 	const users = await Promise.all([
 		prisma.user.create({
 			data: {
 				email: "admin@proloans.com",
 				name: "Jeff D.",
+				password: defaultPassword,
 				role: "ADMIN",
 				accountNumber: "7388333939",
 				creditScore: 820,
@@ -173,6 +192,7 @@ async function main() {
 			data: {
 				email: "kiran.nair@example.com",
 				name: "Kiran Nair",
+				password: defaultPassword,
 				role: "USER",
 				accountNumber: "7388399092222112",
 				creditScore: 780,
@@ -190,6 +210,7 @@ async function main() {
 			data: {
 				email: "manager@proloans.com",
 				name: "Sarah Manager",
+				password: defaultPassword,
 				role: "MANAGER",
 				accountNumber: "7388333940",
 				creditScore: 795,
@@ -207,6 +228,7 @@ async function main() {
 			data: {
 				email: "user1@example.com",
 				name: "Mike Johnson",
+				password: defaultPassword,
 				role: "USER",
 				accountNumber: "7388333941",
 				creditScore: 720,
@@ -224,6 +246,7 @@ async function main() {
 			data: {
 				email: "user2@example.com",
 				name: "Lisa Chen",
+				password: defaultPassword,
 				role: "USER",
 				accountNumber: "7388333942",
 				creditScore: 750,
@@ -241,6 +264,7 @@ async function main() {
 			data: {
 				email: "user3@example.com",
 				name: "David Kim",
+				password: defaultPassword,
 				role: "USER",
 				accountNumber: "7388333943",
 				creditScore: 800,
@@ -258,6 +282,7 @@ async function main() {
 			data: {
 				email: "user4@example.com",
 				name: "Maria Rodriguez",
+				password: defaultPassword,
 				role: "USER",
 				accountNumber: "7388333944",
 				creditScore: 680,
@@ -498,6 +523,223 @@ async function main() {
 
 	console.log(`📄 Created ${documents.length} documents`);
 
+	// Create default categories
+	const categories = await Promise.all([
+		prisma.category.create({
+			data: {
+				name: "Food & Dining",
+				icon: "🍔",
+				color: "#FF6B6B",
+				isDefault: true,
+			},
+		}),
+		prisma.category.create({
+			data: {
+				name: "Shopping",
+				icon: "🛍️",
+				color: "#4ECDC4",
+				isDefault: true,
+			},
+		}),
+		prisma.category.create({
+			data: {
+				name: "Transportation",
+				icon: "🚗",
+				color: "#45B7D1",
+				isDefault: true,
+			},
+		}),
+		prisma.category.create({
+			data: {
+				name: "Bills & Utilities",
+				icon: "💡",
+				color: "#FFA07A",
+				isDefault: true,
+			},
+		}),
+		prisma.category.create({
+			data: {
+				name: "Entertainment",
+				icon: "🎬",
+				color: "#9B59B6",
+				isDefault: true,
+			},
+		}),
+		prisma.category.create({
+			data: {
+				name: "Healthcare",
+				icon: "🏥",
+				color: "#E74C3C",
+				isDefault: true,
+			},
+		}),
+		prisma.category.create({
+			data: {
+				name: "Education",
+				icon: "📚",
+				color: "#3498DB",
+				isDefault: true,
+			},
+		}),
+		prisma.category.create({
+			data: {
+				name: "Travel",
+				icon: "✈️",
+				color: "#1ABC9C",
+				isDefault: true,
+			},
+		}),
+	]);
+
+	console.log(`📂 Created ${categories.length} categories`);
+
+	// Create sample transactions
+	const transactions = await Promise.all([
+		prisma.transaction.create({
+			data: {
+				userId: users[1].id, // Kiran Nair
+				amount: 45.50,
+				categoryId: categories[0].id, // Food & Dining
+				date: new Date("2024-01-15"),
+				note: "Lunch at restaurant",
+				paymentMethod: "Credit Card",
+				location: "New York, NY",
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				userId: users[1].id,
+				amount: 120.00,
+				categoryId: categories[1].id, // Shopping
+				date: new Date("2024-01-16"),
+				note: "Grocery shopping",
+				paymentMethod: "Debit Card",
+				location: "New York, NY",
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				userId: users[1].id,
+				amount: 35.00,
+				categoryId: categories[2].id, // Transportation
+				date: new Date("2024-01-17"),
+				note: "Uber ride",
+				paymentMethod: "Credit Card",
+				location: "New York, NY",
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				userId: users[3].id, // Mike Johnson
+				amount: 150.00,
+				categoryId: categories[3].id, // Bills & Utilities
+				date: new Date("2024-01-18"),
+				note: "Electric bill",
+				paymentMethod: "Bank Transfer",
+				location: "Boston, MA",
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				userId: users[4].id, // Lisa Chen
+				amount: 80.00,
+				categoryId: categories[4].id, // Entertainment
+				date: new Date("2024-01-19"),
+				note: "Movie tickets",
+				paymentMethod: "Credit Card",
+				location: "Los Angeles, CA",
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				userId: users[5].id, // David Kim
+				amount: 200.00,
+				categoryId: categories[5].id, // Healthcare
+				date: new Date("2024-01-20"),
+				note: "Doctor visit",
+				paymentMethod: "Insurance",
+				location: "San Francisco, CA",
+			},
+		}),
+	]);
+
+	console.log(`💸 Created ${transactions.length} transactions`);
+
+	// Create sample budgets
+	const budgets = await Promise.all([
+		prisma.budget.create({
+			data: {
+				userId: users[1].id, // Kiran Nair
+				categoryId: categories[0].id, // Food & Dining
+				amount: 500.00,
+				period: "MONTHLY",
+				startDate: new Date("2024-01-01"),
+				endDate: new Date("2024-01-31"),
+			},
+		}),
+		prisma.budget.create({
+			data: {
+				userId: users[1].id,
+				categoryId: categories[1].id, // Shopping
+				amount: 300.00,
+				period: "MONTHLY",
+				startDate: new Date("2024-01-01"),
+				endDate: new Date("2024-01-31"),
+			},
+		}),
+		prisma.budget.create({
+			data: {
+				userId: users[3].id, // Mike Johnson
+				amount: 2000.00,
+				period: "MONTHLY",
+				startDate: new Date("2024-01-01"),
+				endDate: new Date("2024-01-31"),
+			},
+		}),
+		prisma.budget.create({
+			data: {
+				userId: users[4].id, // Lisa Chen
+				categoryId: categories[4].id, // Entertainment
+				amount: 150.00,
+				period: "MONTHLY",
+				startDate: new Date("2024-01-01"),
+				endDate: new Date("2024-01-31"),
+			},
+		}),
+	]);
+
+	console.log(`💰 Created ${budgets.length} budgets`);
+
+	// Create monthly summaries
+	const monthlySummaries = await Promise.all([
+		prisma.monthlySummary.create({
+			data: {
+				userId: users[1].id, // Kiran Nair
+				year: 2024,
+				month: 0, // January (0-indexed)
+				totalSpent: 200.50,
+				categoryBreakdown: [
+					{ categoryId: categories[0].id, amount: 45.50 },
+					{ categoryId: categories[1].id, amount: 120.00 },
+					{ categoryId: categories[2].id, amount: 35.00 },
+				],
+			},
+		}),
+		prisma.monthlySummary.create({
+			data: {
+				userId: users[3].id, // Mike Johnson
+				year: 2024,
+				month: 0,
+				totalSpent: 150.00,
+				categoryBreakdown: [
+					{ categoryId: categories[3].id, amount: 150.00 },
+				],
+			},
+		}),
+	]);
+
+	console.log(`📊 Created ${monthlySummaries.length} monthly summaries`);
+
 	console.log("\n🎉 Proloans database seeding completed successfully!");
 	console.log("\n📊 Sample Data Summary:");
 	console.log(`   Companies: ${companies.length}`);
@@ -506,6 +748,10 @@ async function main() {
 	console.log(`   Loans: ${loans.length}`);
 	console.log(`   Payments: ${payments.length}`);
 	console.log(`   Documents: ${documents.length}`);
+	console.log(`   Categories: ${categories.length}`);
+	console.log(`   Transactions: ${transactions.length}`);
+	console.log(`   Budgets: ${budgets.length}`);
+	console.log(`   Monthly Summaries: ${monthlySummaries.length}`);
 
 	console.log("\n🏢 Companies:");
 	companies.forEach((company) => {
