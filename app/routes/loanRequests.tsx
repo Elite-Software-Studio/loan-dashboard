@@ -51,6 +51,15 @@ export default function LoanRequests() {
 		fetchLoanRequests();
 	}, [filters]);
 
+	// Refresh when returning to this page (e.g., after taking action on a loan)
+	useEffect(() => {
+		const handleFocus = () => {
+			fetchLoanRequests();
+		};
+		window.addEventListener('focus', handleFocus);
+		return () => window.removeEventListener('focus', handleFocus);
+	}, []);
+
 	const fetchLoanRequests = async () => {
 		setLoading(true);
 		setError(null);

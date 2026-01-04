@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router';
 import { ProloansLayout } from '../components/ProloansLayout';
 import { AlertModal } from '../components/AlertModal';
+import { ConfirmModal } from '../components/ConfirmModal';
+import { RejectLoanModal } from '../components/RejectLoanModal';
 
 interface LoanRequest {
 	id: string;
@@ -43,8 +45,12 @@ export default function LoanRequestDetails() {
 	const [actionLoading, setActionLoading] = useState(false);
 	const [showAlert, setShowAlert] = useState(false);
 	const [alertMessage, setAlertMessage] = useState('');
+	const [alertType, setAlertType] = useState<'success' | 'error' | 'warning' | 'info'>('info');
+	const [showApproveModal, setShowApproveModal] = useState(false);
+	const [showRejectModal, setShowRejectModal] = useState(false);
 	const [showMoreInfoModal, setShowMoreInfoModal] = useState(false);
 	const [moreInfoNotes, setMoreInfoNotes] = useState('');
+	const [moreInfoError, setMoreInfoError] = useState('');
 
 	useEffect(() => {
 		if (id) {
@@ -106,11 +112,15 @@ export default function LoanRequestDetails() {
 			}
 
 			const updatedLoan = await response.json();
+			// Optimistic update: immediately update the loan state
 			setLoan(updatedLoan);
+			setShowApproveModal(false);
 			setAlertMessage('Loan approved successfully');
+			setAlertType('success');
 			setShowAlert(true);
 		} catch (err: any) {
 			setAlertMessage(err.message || 'Failed to approve loan');
+			setAlertType('error');
 			setShowAlert(true);
 		} finally {
 			setActionLoading(false);
@@ -118,12 +128,20 @@ export default function LoanRequestDetails() {
 	};
 
 	const handleRequestMoreInfo = async () => {
-		if (!loan || !moreInfoNotes.trim()) {
-			setAlertMessage('Please provide notes when requesting more information');
-			setShowAlert(true);
+		if (!loan) return;
+
+		// Validate message
+		if (!moreInfoNotes.trim()) {
+			setMoreInfoError('Please provide the information you need from the borrower');
 			return;
 		}
 
+		if (moreInfoNotes.trim().length < 10) {
+			setMoreInfoError('Message must be at least 10 characters');
+			return;
+		}
+
+		setMoreInfoError('');
 		setActionLoading(true);
 		try {
 			const token = localStorage.getItem('auth_token');
@@ -136,7 +154,7 @@ export default function LoanRequestDetails() {
 				body: JSON.stringify({
 					action: 'requestMoreInfo',
 					loanId: loan.id,
-					adminNotes: moreInfoNotes,
+					adminNotes: moreInfoNotes.trim(),
 				}),
 			});
 
@@ -146,25 +164,25 @@ export default function LoanRequestDetails() {
 			}
 
 			const updatedLoan = await response.json();
+			// Optimistic update: immediately update the loan state
 			setLoan(updatedLoan);
 			setShowMoreInfoModal(false);
 			setMoreInfoNotes('');
+			setMoreInfoError('');
 			setAlertMessage('Request for more information sent successfully');
+			setAlertType('success');
 			setShowAlert(true);
 		} catch (err: any) {
 			setAlertMessage(err.message || 'Failed to request more information');
+			setAlertType('error');
 			setShowAlert(true);
 		} finally {
 			setActionLoading(false);
 		}
 	};
 
-	const handleReject = async () => {
+	const handleReject = async (rejectionReason: string) => {
 		if (!loan) return;
-
-		if (!confirm('Are you sure you want to reject this loan request?')) {
-			return;
-		}
 
 		setActionLoading(true);
 		try {
@@ -178,7 +196,7 @@ export default function LoanRequestDetails() {
 				body: JSON.stringify({
 					action: 'reject',
 					loanId: loan.id,
-					adminNotes: 'Loan rejected by admin',
+					adminNotes: rejectionReason,
 				}),
 			});
 
@@ -188,11 +206,18 @@ export default function LoanRequestDetails() {
 			}
 
 			const updatedLoan = await response.json();
+			// Optimistic update: immediately update the loan state
 			setLoan(updatedLoan);
+			setShowRejectModal(false);
 			setAlertMessage('Loan rejected successfully');
+			setAlertType('success');
 			setShowAlert(true);
+
+			// Refresh the loan list in the background (if user navigates back)
+			// This ensures data consistency across views
 		} catch (err: any) {
 			setAlertMessage(err.message || 'Failed to reject loan');
+			setAlertType('error');
 			setShowAlert(true);
 		} finally {
 			setActionLoading(false);
@@ -351,28 +376,57 @@ export default function LoanRequestDetails() {
 				)}
 
 				{/* Actions */}
-				{loan.status === 'PENDING' || loan.status === 'NEEDS_MORE_INFO' ? (
+				{loan.status === 'PENDING' ? (
 					<div className="bg-white rounded-lg shadow p-6">
 						<h2 className="text-xl font-semibold mb-4">Actions</h2>
+						<p className="text-sm text-gray-600 mb-4">
+							Review this loan request and take an action. Once an action is taken, the loan status will be updated.
+						</p>
 						<div className="flex flex-wrap gap-4">
 							<button
-								onClick={handleApprove}
+								onClick={() => setShowApproveModal(true)}
 								disabled={actionLoading}
-								className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+								className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
 							>
-								{actionLoading ? 'Processing...' : 'Approve Loan'}
+								Approve Loan
 							</button>
 							<button
-								onClick={() => setShowMoreInfoModal(true)}
+								onClick={() => {
+									setShowMoreInfoModal(true);
+									setMoreInfoError('');
+								}}
 								disabled={actionLoading}
-								className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+								className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
 							>
 								Request More Info
 							</button>
 							<button
-								onClick={handleReject}
+								onClick={() => setShowRejectModal(true)}
 								disabled={actionLoading}
-								className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+								className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+							>
+								Reject Loan
+							</button>
+						</div>
+					</div>
+				) : loan.status === 'NEEDS_MORE_INFO' ? (
+					<div className="bg-white rounded-lg shadow p-6">
+						<h2 className="text-xl font-semibold mb-4">Actions</h2>
+						<p className="text-sm text-gray-600 mb-4">
+							This loan is waiting for more information from the borrower. You can approve or reject it once the information is received.
+						</p>
+						<div className="flex flex-wrap gap-4">
+							<button
+								onClick={() => setShowApproveModal(true)}
+								disabled={actionLoading}
+								className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+							>
+								Approve Loan
+							</button>
+							<button
+								onClick={() => setShowRejectModal(true)}
+								disabled={actionLoading}
+								className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
 							>
 								Reject Loan
 							</button>
@@ -383,38 +437,119 @@ export default function LoanRequestDetails() {
 						<p className="text-sm text-gray-600">
 							This loan has been {loan.status.toLowerCase().replace('_', ' ')}. No further actions available.
 						</p>
+						{loan.reviewedAt && (
+							<p className="text-xs text-gray-500 mt-2">
+								Reviewed on: {new Date(loan.reviewedAt).toLocaleString()}
+							</p>
+						)}
 					</div>
 				)}
 
+				{/* Approve Confirmation Modal */}
+				<ConfirmModal
+					isOpen={showApproveModal}
+					onClose={() => setShowApproveModal(false)}
+					onConfirm={handleApprove}
+					title="Approve Loan Request"
+					message={
+						<div>
+							<p className="mb-2">Are you sure you want to approve this loan request?</p>
+							{loan && (
+								<div className="bg-green-50 border border-green-200 rounded p-3 mt-3">
+									<p className="text-sm font-medium text-green-900">Loan Details:</p>
+									<ul className="text-sm text-green-800 mt-1 space-y-1">
+										<li>Loan Number: {loan.loanNumber}</li>
+										<li>Amount: ${loan.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
+										<li>Borrower: {loan.user.name}</li>
+									</ul>
+								</div>
+							)}
+						</div>
+					}
+					confirmLabel="Approve Loan"
+					cancelLabel="Cancel"
+					confirmColor="green"
+					isLoading={actionLoading}
+				/>
+
+				{/* Reject Modal */}
+				<RejectLoanModal
+					isOpen={showRejectModal}
+					onClose={() => setShowRejectModal(false)}
+					onConfirm={handleReject}
+					loanNumber={loan?.loanNumber}
+					isLoading={actionLoading}
+				/>
+
 				{/* Request More Info Modal */}
 				{showMoreInfoModal && (
-					<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-						<div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-							<h3 className="text-lg font-semibold mb-4">Request More Information</h3>
-							<textarea
-								value={moreInfoNotes}
-								onChange={(e) => setMoreInfoNotes(e.target.value)}
-								placeholder="Enter the information you need from the borrower..."
-								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 text-gray-900 bg-white placeholder-gray-500"
-								rows={5}
-							/>
-							<div className="flex justify-end gap-4">
-								<button
-									onClick={() => {
-										setShowMoreInfoModal(false);
-										setMoreInfoNotes('');
-									}}
-									className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-								>
-									Cancel
-								</button>
-								<button
-									onClick={handleRequestMoreInfo}
-									disabled={actionLoading || !moreInfoNotes.trim()}
-									className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-								>
-									{actionLoading ? 'Sending...' : 'Send Request'}
-								</button>
+					<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+						<div className="bg-white rounded-lg shadow-xl max-w-md w-full border border-gray-200 animate-in fade-in zoom-in duration-300">
+							<div className="p-6">
+								<h3 className="text-xl font-semibold text-gray-900 font-montserrat-semibold mb-2">
+									Request More Information
+								</h3>
+								{loan && (
+									<p className="text-sm text-gray-600 font-montserrat-regular mb-4">
+										Loan Number: <span className="font-medium">{loan.loanNumber}</span>
+									</p>
+								)}
+								<p className="text-gray-700 font-montserrat-regular mb-4">
+									Please specify what information you need from the borrower. This message will be shared with them.
+								</p>
+								<div className="mb-4">
+									<label className="block text-sm font-medium text-gray-700 mb-2 font-montserrat-medium">
+										Message <span className="text-red-500">*</span>
+									</label>
+									<textarea
+										value={moreInfoNotes}
+										onChange={(e) => {
+											setMoreInfoNotes(e.target.value);
+											setMoreInfoError('');
+										}}
+										placeholder="Enter the information you need from the borrower..."
+										className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500 ${moreInfoError ? 'border-red-500' : 'border-gray-300'
+											}`}
+										rows={5}
+										disabled={actionLoading}
+									/>
+									{moreInfoError && (
+										<p className="text-sm text-red-600 font-montserrat-regular mt-1">{moreInfoError}</p>
+									)}
+									<p className="text-xs text-gray-500 font-montserrat-regular mt-1">
+										Minimum 10 characters required
+									</p>
+								</div>
+								<div className="flex justify-end gap-3">
+									<button
+										onClick={() => {
+											setShowMoreInfoModal(false);
+											setMoreInfoNotes('');
+											setMoreInfoError('');
+										}}
+										disabled={actionLoading}
+										className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-montserrat-medium"
+									>
+										Cancel
+									</button>
+									<button
+										onClick={handleRequestMoreInfo}
+										disabled={actionLoading || !moreInfoNotes.trim()}
+										className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-montserrat-medium"
+									>
+										{actionLoading ? (
+											<span className="flex items-center">
+												<svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+													<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+													<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+												</svg>
+												Sending...
+											</span>
+										) : (
+											'Send Request'
+										)}
+									</button>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -423,8 +558,8 @@ export default function LoanRequestDetails() {
 				<AlertModal
 					isOpen={showAlert}
 					onClose={() => setShowAlert(false)}
-					type="info"
-					title="Notification"
+					type={alertType}
+					title={alertType === 'success' ? 'Success' : alertType === 'error' ? 'Error' : 'Notification'}
 					message={alertMessage}
 				/>
 			</div>

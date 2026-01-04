@@ -30,10 +30,13 @@ export async function loader({ request }: { request: Request }) {
 		if (adminView || requestSource === "mobile") {
 			const user = await authenticateRequest(request);
 			if (!user || user.role !== "ADMIN") {
-				return Response.json({ error: "Unauthorized: Admin access required" }, {
-					status: 403,
-					headers: CORS_HEADERS,
-				});
+				return Response.json(
+					{ error: "Unauthorized: Admin access required" },
+					{
+						status: 403,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 		}
 
@@ -52,10 +55,13 @@ export async function loader({ request }: { request: Request }) {
 			});
 
 			if (!loan) {
-				return Response.json({ error: "Loan not found" }, {
-					status: 404,
-					headers: CORS_HEADERS,
-				});
+				return Response.json(
+					{ error: "Loan not found" },
+					{
+						status: 404,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 
 			return Response.json(loan, { headers: CORS_HEADERS });
@@ -100,10 +106,13 @@ export async function loader({ request }: { request: Request }) {
 		return Response.json(loans, { headers: CORS_HEADERS });
 	} catch (error) {
 		console.error("Loans API Error:", error);
-		return Response.json({ error: "Internal Server Error" }, {
-			status: 500,
-			headers: CORS_HEADERS,
-		});
+		return Response.json(
+			{ error: "Internal Server Error" },
+			{
+				status: 500,
+				headers: CORS_HEADERS,
+			}
+		);
 	}
 }
 
@@ -119,67 +128,48 @@ export async function action({ request }: { request: Request }) {
 		const body = await request.json();
 		const { action: actionType } = body;
 
-		if (actionType === "create" || request.method === "POST") {
-			// Create new loan
-			const {
-				userId,
-				branchId,
-				type,
-				amount,
-				rate,
-				startDate,
-				endDate,
-				description,
-				requestSource,
-			} = body;
-
-			if (!userId || !branchId || !type || !amount || !rate) {
-				return Response.json({ error: "Missing required fields" }, {
-					status: 400,
-					headers: CORS_HEADERS,
-				});
-			}
-
-			// Generate loan number
-			const loanNumber = `LOAN${Date.now()}${Math.floor(Math.random() * 1000)}`;
-
-			const loan = await prisma.loan.create({
-				data: {
-					loanNumber,
-					userId,
-					branchId,
-					type,
-					amount: parseFloat(amount),
-					rate: parseFloat(rate),
-					startDate: startDate ? new Date(startDate) : new Date(),
-					endDate: endDate ? new Date(endDate) : null,
-					description: description || null,
-					status: "PENDING",
-					requestSource: requestSource || "web",
-				},
-				include: {
-					user: true,
-					branch: {
-						include: {
-							company: true,
-						},
-					},
-				},
-			});
-
-			return Response.json(loan, { headers: CORS_HEADERS });
-		}
-
+		// Check for specific actions first (before falling back to create)
 		if (actionType === "approve") {
 			// Approve loan (admin only)
 			const admin = await requireAdmin(request);
 			const { loanId } = body;
 
 			if (!loanId) {
-				return Response.json({ error: "Loan ID is required" }, {
-					status: 400,
-					headers: CORS_HEADERS,
-				});
+				return Response.json(
+					{ error: "Loan ID is required" },
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
+			}
+
+			// Fetch current loan to validate status
+			const currentLoan = await prisma.loan.findUnique({
+				where: { id: loanId },
+			});
+
+			if (!currentLoan) {
+				return Response.json(
+					{ error: "Loan not found" },
+					{
+						status: 404,
+						headers: CORS_HEADERS,
+					}
+				);
+			}
+
+			// Business rule: Only PENDING or NEEDS_MORE_INFO loans can be approved
+			if (currentLoan.status !== "PENDING" && currentLoan.status !== "NEEDS_MORE_INFO") {
+				return Response.json(
+					{
+						error: `Cannot approve loan. Current status is ${currentLoan.status}. Only PENDING or NEEDS_MORE_INFO loans can be approved.`,
+					},
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 
 			const loan = await prisma.loan.update({
@@ -207,25 +197,65 @@ export async function action({ request }: { request: Request }) {
 			const admin = await requireAdmin(request);
 			const { loanId, adminNotes } = body;
 
+			console.log("[LOANS] RequestMoreInfo - Received:", {
+				loanId,
+				adminNotes: adminNotes?.substring(0, 50),
+				adminNotesLength: adminNotes?.length,
+			});
+
 			if (!loanId) {
-				return Response.json({ error: "Loan ID is required" }, {
-					status: 400,
-					headers: CORS_HEADERS,
-				});
+				return Response.json(
+					{ error: "Loan ID is required" },
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 
-			if (!adminNotes || adminNotes.trim() === "") {
-				return Response.json({ error: "Admin notes are required when requesting more information" }, {
-					status: 400,
-					headers: CORS_HEADERS,
-				});
+			if (!adminNotes || typeof adminNotes !== "string" || adminNotes.trim() === "") {
+				return Response.json(
+					{ error: "Admin notes are required when requesting more information" },
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
+			}
+
+			// Fetch current loan to validate status
+			const currentLoan = await prisma.loan.findUnique({
+				where: { id: loanId },
+			});
+
+			if (!currentLoan) {
+				return Response.json(
+					{ error: "Loan not found" },
+					{
+						status: 404,
+						headers: CORS_HEADERS,
+					}
+				);
+			}
+
+			// Business rule: Only PENDING loans can be marked as needs more info
+			if (currentLoan.status !== "PENDING") {
+				return Response.json(
+					{
+						error: `Cannot request more information. Current status is ${currentLoan.status}. Only PENDING loans can be updated.`,
+					},
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 
 			const loan = await prisma.loan.update({
 				where: { id: loanId },
 				data: {
 					status: "NEEDS_MORE_INFO",
-					adminNotes: adminNotes,
+					adminNotes: adminNotes.trim(),
 					reviewedAt: new Date(),
 					reviewedBy: admin.id,
 				},
@@ -247,18 +277,66 @@ export async function action({ request }: { request: Request }) {
 			const admin = await requireAdmin(request);
 			const { loanId, adminNotes } = body;
 
+			console.log("[LOANS] Reject - Received:", {
+				loanId,
+				adminNotes: adminNotes?.substring(0, 50),
+				adminNotesLength: adminNotes?.length,
+			});
+
 			if (!loanId) {
-				return Response.json({ error: "Loan ID is required" }, {
-					status: 400,
-					headers: CORS_HEADERS,
-				});
+				return Response.json(
+					{ error: "Loan ID is required" },
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
+			}
+
+			// Business rule: Rejection reason is required
+			if (!adminNotes || typeof adminNotes !== "string" || adminNotes.trim() === "") {
+				return Response.json(
+					{ error: "Rejection reason is required" },
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
+			}
+
+			// Fetch current loan to validate status
+			const currentLoan = await prisma.loan.findUnique({
+				where: { id: loanId },
+			});
+
+			if (!currentLoan) {
+				return Response.json(
+					{ error: "Loan not found" },
+					{
+						status: 404,
+						headers: CORS_HEADERS,
+					}
+				);
+			}
+
+			// Business rule: Only PENDING or NEEDS_MORE_INFO loans can be rejected
+			if (currentLoan.status !== "PENDING" && currentLoan.status !== "NEEDS_MORE_INFO") {
+				return Response.json(
+					{
+						error: `Cannot reject loan. Current status is ${currentLoan.status}. Only PENDING or NEEDS_MORE_INFO loans can be rejected.`,
+					},
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 
 			const loan = await prisma.loan.update({
 				where: { id: loanId },
 				data: {
 					status: "REJECTED",
-					adminNotes: adminNotes || null,
+					adminNotes: adminNotes.trim(),
 					reviewedAt: new Date(),
 					reviewedBy: admin.id,
 				},
@@ -280,10 +358,13 @@ export async function action({ request }: { request: Request }) {
 			const { id, ...updateData } = body;
 
 			if (!id) {
-				return Response.json({ error: "Loan ID is required" }, {
-					status: 400,
-					headers: CORS_HEADERS,
-				});
+				return Response.json(
+					{ error: "Loan ID is required" },
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 
 			// Convert date strings to Date objects if present
@@ -321,10 +402,13 @@ export async function action({ request }: { request: Request }) {
 			const { id } = body;
 
 			if (!id) {
-				return Response.json({ error: "Loan ID is required" }, {
-					status: 400,
-					headers: CORS_HEADERS,
-				});
+				return Response.json(
+					{ error: "Loan ID is required" },
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
 			}
 
 			await prisma.loan.delete({
@@ -334,16 +418,76 @@ export async function action({ request }: { request: Request }) {
 			return Response.json({ success: true }, { headers: CORS_HEADERS });
 		}
 
-		return Response.json({ error: "Invalid action" }, {
-			status: 400,
-			headers: CORS_HEADERS,
-		});
+		// Create new loan (default for POST requests without specific action)
+		if (actionType === "create" || (!actionType && request.method === "POST")) {
+			// Create new loan
+			const {
+				userId,
+				branchId,
+				type,
+				amount,
+				rate,
+				startDate,
+				endDate,
+				description,
+				requestSource,
+			} = body;
+
+			if (!userId || !branchId || !type || !amount || !rate) {
+				return Response.json(
+					{ error: "Missing required fields" },
+					{
+						status: 400,
+						headers: CORS_HEADERS,
+					}
+				);
+			}
+
+			// Generate loan number
+			const loanNumber = `LOAN${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+			const loan = await prisma.loan.create({
+				data: {
+					loanNumber,
+					userId,
+					branchId,
+					type,
+					amount: parseFloat(amount),
+					rate: parseFloat(rate),
+					startDate: startDate ? new Date(startDate) : new Date(),
+					endDate: endDate ? new Date(endDate) : null,
+					description: description || null,
+					status: "PENDING",
+					requestSource: requestSource || "web",
+				},
+				include: {
+					user: true,
+					branch: {
+						include: {
+							company: true,
+						},
+					},
+				},
+			});
+
+			return Response.json(loan, { headers: CORS_HEADERS });
+		}
+
+		return Response.json(
+			{ error: "Invalid action" },
+			{
+				status: 400,
+				headers: CORS_HEADERS,
+			}
+		);
 	} catch (error) {
 		console.error("Loans API Error:", error);
-		return Response.json({ error: "Internal Server Error" }, {
-			status: 500,
-			headers: CORS_HEADERS,
-		});
+		return Response.json(
+			{ error: "Internal Server Error" },
+			{
+				status: 500,
+				headers: CORS_HEADERS,
+			}
+		);
 	}
 }
-
