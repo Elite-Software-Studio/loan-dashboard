@@ -25,34 +25,53 @@ A comprehensive backend API and admin dashboard for the Loan Management System, 
 ### Installation
 
 1. **Install dependencies**
+
    ```bash
    npm install
    ```
 
-2. **Set up environment variables**
+2. **Set up local PostgreSQL database (recommended for development)**
+
+   **Option A: Using Docker (Easiest)**
+
+   ```bash
+   # Start PostgreSQL with Docker
+   npm run db:start
+   ```
+
+   This will start a PostgreSQL database on `localhost:5432`. See `DATABASE_SETUP.md` for details.
+
+   **Option B: Use existing database**
+   - Local PostgreSQL installation
+   - Cloud services like Neon, Supabase, or AWS RDS
+
+3. **Set up environment variables**
    Create a `.env` file in the root directory:
+
    ```env
-   DATABASE_URL_POSTGRESQL="postgresql://user:password@localhost:5432/loan_db"
+   # For local Docker database (default)
+   DATABASE_URL_POSTGRESQL="postgresql://postgres:postgres@localhost:5432/loan_admin?schema=public"
+
+   # Or use your own database connection string
+   # DATABASE_URL_POSTGRESQL="postgresql://user:password@host:port/database"
+
    JWT_SECRET="your-super-secret-jwt-key-change-in-production"
    JWT_EXPIRES_IN="7d"
    ```
-   
-   **Note:** You'll need to set up your own PostgreSQL database. You can use:
-   - Local PostgreSQL installation
-   - Cloud services like Neon, Supabase, or AWS RDS
-   - Managed database services
 
-3. **Run database migrations**
+4. **Run database migrations**
+
    ```bash
    npx prisma migrate dev
    ```
 
-4. **Generate Prisma Client**
+5. **Generate Prisma Client**
+
    ```bash
    npm run prisma:generate
    ```
 
-5. **Seed the database (optional)**
+6. **Seed the database (optional)**
    ```bash
    npm run prisma:seed
    ```
@@ -71,33 +90,43 @@ The API endpoints are available at `http://localhost:5173/api/*`
 
 ## 📚 API Endpoints
 
+### Health Check
+
+- `GET /api/health` - Health check endpoint (returns server and database status)
+
 ### Authentication
+
 - `POST /api/auth` - Sign in / Sign up
 - `GET /api/auth?userId={id}` - Get user by ID
 - `GET /api/auth` (with Bearer token) - Get current user
 
 ### Loans
+
 - `GET /api/loans` - Get loans (with filters)
 - `POST /api/loans` - Create loan application
 - `PUT /api/loans` - Update loan
 - `DELETE /api/loans` - Delete loan
 
 ### Payments
+
 - `GET /api/payments` - Get payments
 - `POST /api/payments` - Create payment
 
 ### Transactions
+
 - `GET /api/transactions` - Get transactions
 - `POST /api/transactions` - Create transaction
 - `PUT /api/transactions` - Update transaction
 - `DELETE /api/transactions` - Delete transaction
 
 ### Budgets
+
 - `GET /api/budgets` - Get budgets
 - `POST /api/budgets` - Create/update budget
 - `DELETE /api/budgets` - Delete budget
 
 ### Documents
+
 - `GET /api/documents` - Get documents
 - `POST /api/documents` - Upload document
 
@@ -131,21 +160,25 @@ The project uses PostgreSQL with Prisma ORM.
 ### Database Management
 
 **View database schema:**
+
 ```bash
 npm run prisma:studio
 ```
 
 **Create migration:**
+
 ```bash
 npm run prisma:migrate
 ```
 
 **Reset database:**
+
 ```bash
 npm run prisma:reset
 ```
 
 **Seed database:**
+
 ```bash
 npm run prisma:seed
 ```
@@ -179,6 +212,7 @@ NODE_ENV="production"
 ## 📖 Additional Documentation
 
 - `SETUP.md` - Detailed setup instructions
+- `DATABASE_SETUP.md` - Local PostgreSQL setup with Docker
 - `BRANCH_MANAGEMENT.md` - Branch management system
 - `NPM_SCRIPTS.md` - Available npm scripts
 

@@ -11,6 +11,15 @@ This document lists all available npm scripts for the Loan Admin project.
 | `start` | `npm run start` | Start production server |
 | `typecheck` | `npm run typecheck` | Type check the codebase |
 
+## 🗄️ Database Scripts
+
+| Script | Command | Description |
+|--------|---------|-------------|
+| `db:start` | `npm run db:start` | Start PostgreSQL with Docker Compose |
+| `db:stop` | `npm run db:stop` | Stop PostgreSQL containers |
+| `db:logs` | `npm run db:logs` | View PostgreSQL logs |
+| `db:reset` | `npm run db:reset` | Reset database (⚠️ deletes all data) |
+
 ## 🔧 Prisma Scripts
 
 | Script | Command | Description |

@@ -20,5 +20,6 @@ export default [
   route("api/documents", "api/documents.ts"),
   route("api/transactions", "api/transactions.ts"),
   route("api/budgets", "api/budgets.ts"),
-  route("api/categories", "api/categories.ts")
+  route("api/categories", "api/categories.ts"),
+  route("api/health", "api/health.ts")
 ] satisfies RouteConfig;
