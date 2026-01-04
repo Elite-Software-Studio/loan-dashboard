@@ -8,6 +8,8 @@ export default [
   route("loans", "routes/loans.tsx"),
   route("loan", "routes/loanDetails.tsx"),
   route("loan/payments", "routes/paymentHistory.tsx"),
+  route("loan-requests", "routes/loanRequests.tsx"),
+  route("loan-request/:id", "routes/loanRequestDetails.tsx"),
   route("reporting", "routes/reporting.tsx"),
   route("controls", "routes/controls.tsx"),
   route("companies", "routes/companies.tsx"),

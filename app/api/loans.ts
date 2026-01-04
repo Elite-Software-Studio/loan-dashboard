@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import { requireAdmin, authenticateRequest } from "../lib/authMiddleware";
 
 const CORS_HEADERS = {
 	"Content-Type": "application/json",
@@ -20,6 +21,21 @@ export async function loader({ request }: { request: Request }) {
 		const userId = url.searchParams.get("userId");
 		const loanId = url.searchParams.get("loanId");
 		const status = url.searchParams.get("status");
+		const requestSource = url.searchParams.get("requestSource");
+		const startDate = url.searchParams.get("startDate");
+		const endDate = url.searchParams.get("endDate");
+		const adminView = url.searchParams.get("adminView") === "true";
+
+		// Check if this is an admin request for loan requests
+		if (adminView || requestSource === "mobile") {
+			const user = await authenticateRequest(request);
+			if (!user || user.role !== "ADMIN") {
+				return Response.json({ error: "Unauthorized: Admin access required" }, {
+					status: 403,
+					headers: CORS_HEADERS,
+				});
+			}
+		}
 
 		if (loanId) {
 			// Get single loan
@@ -52,6 +68,18 @@ export async function loader({ request }: { request: Request }) {
 		}
 		if (status) {
 			where.status = status;
+		}
+		if (requestSource) {
+			where.requestSource = requestSource;
+		}
+		if (startDate || endDate) {
+			where.createdAt = {};
+			if (startDate) {
+				where.createdAt.gte = new Date(startDate);
+			}
+			if (endDate) {
+				where.createdAt.lte = new Date(endDate);
+			}
 		}
 
 		const loans = await prisma.loan.findMany({
@@ -102,6 +130,7 @@ export async function action({ request }: { request: Request }) {
 				startDate,
 				endDate,
 				description,
+				requestSource,
 			} = body;
 
 			if (!userId || !branchId || !type || !amount || !rate) {
@@ -126,6 +155,112 @@ export async function action({ request }: { request: Request }) {
 					endDate: endDate ? new Date(endDate) : null,
 					description: description || null,
 					status: "PENDING",
+					requestSource: requestSource || "web",
+				},
+				include: {
+					user: true,
+					branch: {
+						include: {
+							company: true,
+						},
+					},
+				},
+			});
+
+			return Response.json(loan, { headers: CORS_HEADERS });
+		}
+
+		if (actionType === "approve") {
+			// Approve loan (admin only)
+			const admin = await requireAdmin(request);
+			const { loanId } = body;
+
+			if (!loanId) {
+				return Response.json({ error: "Loan ID is required" }, {
+					status: 400,
+					headers: CORS_HEADERS,
+				});
+			}
+
+			const loan = await prisma.loan.update({
+				where: { id: loanId },
+				data: {
+					status: "APPROVED",
+					reviewedAt: new Date(),
+					reviewedBy: admin.id,
+				},
+				include: {
+					user: true,
+					branch: {
+						include: {
+							company: true,
+						},
+					},
+				},
+			});
+
+			return Response.json(loan, { headers: CORS_HEADERS });
+		}
+
+		if (actionType === "requestMoreInfo") {
+			// Mark loan as needs more info (admin only)
+			const admin = await requireAdmin(request);
+			const { loanId, adminNotes } = body;
+
+			if (!loanId) {
+				return Response.json({ error: "Loan ID is required" }, {
+					status: 400,
+					headers: CORS_HEADERS,
+				});
+			}
+
+			if (!adminNotes || adminNotes.trim() === "") {
+				return Response.json({ error: "Admin notes are required when requesting more information" }, {
+					status: 400,
+					headers: CORS_HEADERS,
+				});
+			}
+
+			const loan = await prisma.loan.update({
+				where: { id: loanId },
+				data: {
+					status: "NEEDS_MORE_INFO",
+					adminNotes: adminNotes,
+					reviewedAt: new Date(),
+					reviewedBy: admin.id,
+				},
+				include: {
+					user: true,
+					branch: {
+						include: {
+							company: true,
+						},
+					},
+				},
+			});
+
+			return Response.json(loan, { headers: CORS_HEADERS });
+		}
+
+		if (actionType === "reject") {
+			// Reject loan (admin only)
+			const admin = await requireAdmin(request);
+			const { loanId, adminNotes } = body;
+
+			if (!loanId) {
+				return Response.json({ error: "Loan ID is required" }, {
+					status: 400,
+					headers: CORS_HEADERS,
+				});
+			}
+
+			const loan = await prisma.loan.update({
+				where: { id: loanId },
+				data: {
+					status: "REJECTED",
+					adminNotes: adminNotes || null,
+					reviewedAt: new Date(),
+					reviewedBy: admin.id,
 				},
 				include: {
 					user: true,

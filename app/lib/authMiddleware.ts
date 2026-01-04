@@ -50,3 +50,22 @@ export async function requireAuth(request: Request) {
 	return user;
 }
 
+/**
+ * Require admin role - throws error if user is not admin
+ */
+export async function requireAdmin(request: Request) {
+	const user = await requireAuth(request);
+	
+	if (user.role !== "ADMIN") {
+		throw new Response(
+			JSON.stringify({ error: "Forbidden: Admin access required" }),
+			{
+				status: 403,
+				headers: { "Content-Type": "application/json" },
+			}
+		);
+	}
+
+	return user;
+}
+

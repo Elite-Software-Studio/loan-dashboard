@@ -96,26 +96,33 @@ model User {
 }
 
 model Loan {
-  id          String      @id @default(cuid())
-  loanNumber  String      @unique
-  type        LoanType
-  amount      Float
-  rate        Float
-  status      LoanStatus  @default(PENDING)
-  startDate   DateTime
-  endDate     DateTime?
-  userId      String
-  user        User        @relation(fields: [userId], references: [id])
-  branchId   String      // Loan is associated with a branch
-  branch      Branch      @relation(fields: [branchId], references: [id])
-  image       String?
-  description String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  loanNumber      String      @unique
+  type            LoanType
+  amount          Float
+  rate            Float
+  status          LoanStatus  @default(PENDING)
+  startDate       DateTime
+  endDate         DateTime?
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  branchId        String      // Loan is associated with a branch
+  branch          Branch      @relation(fields: [branchId], references: [id])
+  image           String?
+  description     String?
+  requestSource   String?     // "mobile" or "web" - tracks where the request originated
+  adminNotes      String?     // Admin notes or request for more information
+  reviewedAt      DateTime?   // Timestamp when loan was reviewed
+  reviewedBy      String?     // ID of admin who reviewed the loan
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   @@map("loans")
   @@index([branchId])
   @@index([userId])
+  @@index([status])
+  @@index([requestSource])
+  @@index([createdAt])
 }
 
 model Payment {
@@ -277,6 +284,7 @@ enum LoanStatus {
   ACTIVE
   PAID
   DEFAULTED
+  NEEDS_MORE_INFO
 }
 
 enum PaymentType {

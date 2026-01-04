@@ -43,6 +43,7 @@ export const LOAN_STATUS = {
 	ACTIVE: "ACTIVE",
 	PAID: "PAID",
 	DEFAULTED: "DEFAULTED",
+	NEEDS_MORE_INFO: "NEEDS_MORE_INFO",
 } as const;
 
 /**
@@ -117,5 +118,6 @@ export const NAVIGATION_ITEMS = [
 	{ name: "Payments", href: "/payments", icon: "💳" },
 	{ name: "Reporting", href: "/reporting", icon: "📈" },
 	{ name: "Loans", href: "/loans", icon: "💰" },
+	{ name: "Loan Requests", href: "/loan-requests", icon: "📋" },
 	{ name: "Controls", href: "/controls", icon: "⚙️" },
 ] as const;
